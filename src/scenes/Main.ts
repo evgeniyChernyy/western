@@ -46,14 +46,26 @@ export class Main extends Scene
     addTrees(){
         this.treesLayer.objects.forEach((object) => {
             if (object.name === "palm") {
-                this.add.image(object.x,object.y,"palm_shadow").setOrigin(1,0).setDepth(PLAYER_DEPTH - 1)
-                this.matter.add.image(object.x,object.y, 'palm',null,{
+                let shadow = this.add.image(object.x,object.y,"palm_shadow").setOrigin(1,0).setDepth(PLAYER_DEPTH - 1),
+                    tree = this.matter.add.image(object.x,object.y, 'palm',null,{
                     shape:{
                         type: 'circle',
                         radius: 20
                     },
                     isStatic:true
                 }).setDepth(PLAYER_DEPTH + 1)
+                if(Phaser.Math.Between(0,1)){
+                    let config = {
+                        targets:[tree,shadow],
+                        yoyo: true,
+                        repeat: -1,
+                        ease: 'Sine.easeInOut',
+                        x:"+=10",
+                        y:"+=10",
+                        duration:Phaser.Math.Between(4000,8000)
+                    }
+                    this.tweens.add(config)
+                }
             }
         })
     }
