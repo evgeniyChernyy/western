@@ -1,5 +1,6 @@
 import { Physics, GameObjects, Input } from 'phaser';
 import {PLAYER_DEPTH, PLAYER_SPEED, UI_DEPTH} from "../constants"
+import {Bullet} from "../classes/Bullet";
 
 export class Player extends Physics.Matter.Sprite{
 
@@ -23,7 +24,7 @@ export class Player extends Physics.Matter.Sprite{
         this.canShoot = true
         this.currentWeapon = {
             name:"pistols",
-            shootDelay:500,
+            shootDelay:300,
             shakeDuration:25,
             shakeIntensity:0.01,
             offsetX1:50,
@@ -79,8 +80,6 @@ export class Player extends Physics.Matter.Sprite{
     }
     shoot(pistolIndex = 1){
         this.canShoot = false
-        // пока без отдачи+
-        // knockback(player,150,player.rotation);
 
         this.scene.cameras.main.shake(this.currentWeapon.shakeDuration,this.currentWeapon.shakeIntensity,true);
 
@@ -89,6 +88,17 @@ export class Player extends Physics.Matter.Sprite{
         this.muzzleFire.setPosition(this.x + muzzleX,this.y + muzzleY)
         this.muzzleFire.rotation = this.rotation
         this.muzzleFire.setVisible(true)
+
+        new Bullet({
+            scene:this.scene,
+            x:this.x + muzzleX,
+            y:this.y + muzzleY,
+            rotation:this.rotation,
+            forceVector:{
+                x:this.aim.x,
+                y:this.aim.y,
+            }
+        })
 
         this.scene.time.addEvent({
             delay:this.currentWeapon.shootDelay,
@@ -106,9 +116,6 @@ export class Player extends Physics.Matter.Sprite{
                 this.muzzleFire.setVisible(false)
             },
         })
-
-        // player.reticleSpread += 1;
-        // new Bullet(game, player.x, player.y, 'atlas', 'bullet0001', 1, player, 400, 0);
     }
     update(){
         // rotation

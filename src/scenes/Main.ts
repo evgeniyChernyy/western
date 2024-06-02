@@ -21,7 +21,7 @@ export class Main extends Scene
     create ()
     {
         this.map = this.make.tilemap({ key: 'level1' })
-        this.matter.world.setBounds(this.map.widthInPixels, this.map.heightInPixels)
+        this.matter.world.setBounds(0,0,this.map.widthInPixels, this.map.heightInPixels)
 
         this.grass = this.add.tileSprite(
             0,
@@ -42,6 +42,17 @@ export class Main extends Scene
         // camera
         this.cameras.main.setBounds(0,0,this.map.widthInPixels,this.map.heightInPixels)
         this.cameras.main.startFollow(this.player)
+
+        // collisions
+        // bullet and world bounds
+        this.matter.world.on('collisionstart', (event, bodyA, bodyB) =>
+        {
+            if(bodyA.gameObject === null && bodyB.gameObject.name === "bullet" ||
+                bodyB.gameObject === null && bodyA.gameObject.name === "bullet"){
+                bodyA?.gameObject?.destroy()
+                bodyB?.gameObject?.destroy()
+            }
+        });
     }
     addTrees(){
         this.treesLayer.objects.forEach((object) => {
