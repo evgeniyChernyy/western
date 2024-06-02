@@ -1,5 +1,6 @@
 import { Scene, GameObjects, Tilemaps } from 'phaser';
 import {PLAYER_DEPTH} from "../constants";
+import {Player} from "../classes/Player";
 
 export class Main extends Scene
 {
@@ -50,7 +51,8 @@ export class Main extends Scene
                     shape:{
                         type: 'circle',
                         radius: 20
-                    }
+                    },
+                    isStatic:true
                 }).setDepth(PLAYER_DEPTH + 1)
             }
         })
@@ -58,7 +60,11 @@ export class Main extends Scene
     addCharacters(){
         this.charactersLayer.objects.forEach((object) => {
             if (object.name === "player") {
-                this.player = this.add.image(object.x,object.y,"player").setScale(.5,.5)
+                this.player = new Player({
+                    x:object.x,
+                    y:object.y,
+                    scene:this
+                })
             }
         })
     }
