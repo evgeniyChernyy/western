@@ -68,8 +68,10 @@ export class Main extends Scene
             }
         })
     }
-    update(){
+    update(time,delta){
         this.grass.tilePositionX = this.cameras.main.scrollX
         this.grass.tilePositionY = this.cameras.main.scrollY
+
+        this.player.update()
     }
 }
