@@ -4,12 +4,13 @@ body {
     color: rgba(255, 255, 255, 0.87);
     background-color: #000000;
 }
-
-#app {
+canvas#canvas{
+    display: block;
     width: 100%;
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    height: 100%;
+}
+.phaser-container{
+    max-width: 100vw;
+    height: 100%;
+    position: relative;
 }
