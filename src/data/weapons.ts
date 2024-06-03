@@ -9,8 +9,10 @@ let weapons = {
         offsetY1:20,
         bulletLifespan:500,
         bulletSpeed:25,
+        reloadTime:1000,
         spriteIndex:0,
         ammo:28,
+        holderQuantity:6,
         holder1:6,
     },
     pistols:{
@@ -27,10 +29,12 @@ let weapons = {
         offsetY2:-20,
         bulletLifespan:500,
         bulletSpeed:25,
+        reloadTime:2500,
         spriteIndex:1,
         ammo:28,
+        holderQuantity:6,
         holder1:6,
-        holder2:6
+        holder2:6,
     }
 }
 

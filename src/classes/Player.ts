@@ -5,11 +5,13 @@ import {weapons} from "../data/weapons"
 
 export class Player extends Physics.Matter.Sprite{
 
+    state : string
+
     muzzleFire : GameObjects.Image
     aim : GameObjects.Image
 
     bullets : Array<Bullet>
-    moveKeys : object
+    controlKeys : object
     canShoot : boolean
     weapons : object
     currentWeaponLabel : string
@@ -18,7 +20,7 @@ export class Player extends Physics.Matter.Sprite{
     weaponAmmoUIText : GameObjects.Text
 
     constructor(config) {
-        super(config.scene.matter.world,config.x,config.y,"player",0,{
+        super(config.scene.matter.world,config.x,config.y,"player",1,{
             shape:{ type: 'circle', radius:65 },
             render: { sprite: { xOffset: -0.1 } },
             frictionAir:0
@@ -27,11 +29,12 @@ export class Player extends Physics.Matter.Sprite{
         this.setScale(.5,.5).setDepth(PLAYER_DEPTH)
 
         // config, inventory, state
+        this.state = "idle"
         this.bullets = []
         this.canShoot = true
 
         this.weapons = weapons
-        this.currentWeaponLabel = "singlePistol"
+        this.currentWeaponLabel = "pistols"
         this.currentWeapon = weapons[this.currentWeaponLabel]
 
         // weapon UI
@@ -63,25 +66,27 @@ export class Player extends Physics.Matter.Sprite{
             scene.game.input.mouse.requestPointerLock();
         });
 
-        this.moveKeys = scene.input.keyboard.addKeys({
+        this.controlKeys = scene.input.keyboard.addKeys({
             up: Phaser.Input.Keyboard.KeyCodes.W,
             down: Phaser.Input.Keyboard.KeyCodes.S,
             left: Phaser.Input.Keyboard.KeyCodes.A,
-            right: Phaser.Input.Keyboard.KeyCodes.D
+            right: Phaser.Input.Keyboard.KeyCodes.D,
+            reload:Phaser.Input.Keyboard.KeyCodes.R
         });
 
         // Enables movement of player with WASD keys
         scene.input.keyboard.on('keydown', event => {
-            if (this.moveKeys['up'].isDown && !this.moveKeys['down'].isDown) { this.setVelocityY(-PLAYER_SPEED); }
-            if (this.moveKeys['down'].isDown && !this.moveKeys['up'].isDown) { this.setVelocityY(PLAYER_SPEED); }
-            if (this.moveKeys['left'].isDown && !this.moveKeys['right'].isDown) { this.setVelocityX(-PLAYER_SPEED); }
-            if (this.moveKeys['right'].isDown && !this.moveKeys['left'].isDown) { this.setVelocityX(PLAYER_SPEED); }
+            if (this.controlKeys['up'].isDown && !this.controlKeys['down'].isDown) { this.setVelocityY(-PLAYER_SPEED); }
+            if (this.controlKeys['down'].isDown && !this.controlKeys['up'].isDown) { this.setVelocityY(PLAYER_SPEED); }
+            if (this.controlKeys['left'].isDown && !this.controlKeys['right'].isDown) { this.setVelocityX(-PLAYER_SPEED); }
+            if (this.controlKeys['right'].isDown && !this.controlKeys['left'].isDown) { this.setVelocityX(PLAYER_SPEED); }
+            if (this.controlKeys['reload'].isDown && this.state !== "reload") { this.reload() }
         });
         scene.input.keyboard.on('keyup', event => {
-            if (this.moveKeys['up'].isUp && this.moveKeys['down'].isUp) { this.setVelocityY(0); }
-            if (this.moveKeys['down'].isUp && this.moveKeys['up'].isUp) { this.setVelocityY(0); }
-            if (this.moveKeys['left'].isUp && this.moveKeys['right'].isUp) { this.setVelocityX(0); }
-            if (this.moveKeys['right'].isUp && this.moveKeys['left'].isUp) { this.setVelocityX(0); }
+            if (this.controlKeys['up'].isUp && this.controlKeys['down'].isUp) { this.setVelocityY(0); }
+            if (this.controlKeys['down'].isUp && this.controlKeys['up'].isUp) { this.setVelocityY(0); }
+            if (this.controlKeys['left'].isUp && this.controlKeys['right'].isUp) { this.setVelocityX(0); }
+            if (this.controlKeys['right'].isUp && this.controlKeys['left'].isUp) { this.setVelocityX(0); }
         });
 
         // Move reticle upon locked pointer move
@@ -92,6 +97,37 @@ export class Player extends Physics.Matter.Sprite{
                 this.aim.y += pointer.movementY;
             }
         });
+    }
+    reload(){
+        this.state = "reload"
+        this.canShoot = false
+
+        this.scene.time.addEvent({
+            delay:this.currentWeapon.reloadTime,
+            callback:()=>{
+                this.state = "idle"
+                this.canShoot = true
+
+                let ammoQuantityIndex = this.currentWeapon.double ? 2 : 1,
+                    ammoQuantity = this.currentWeapon.ammo >= this.currentWeapon.holderQuantity * ammoQuantityIndex ?
+                    this.currentWeapon.holderQuantity * ammoQuantityIndex : this.currentWeapon.ammo
+
+                this.currentWeapon.ammo -= ammoQuantity
+
+                if(this.currentWeapon.double){
+                    if(ammoQuantity % 2 === 0){
+                        this.currentWeapon.holder1 = this.currentWeapon.holder2 = ammoQuantity / 2
+                    } else {
+                        this.currentWeapon.holder1 = Math.ceil(ammoQuantity / 2)
+                        this.currentWeapon.holder2 = ammoQuantity - this.currentWeapon.holder1
+                    }
+                } else {
+                    this.currentWeapon.holder1 = ammoQuantity
+                }
+
+                this.weaponAmmoUIText.setText(this.getAmmoUIText())
+            },
+        })
     }
     getAmmoUIText() : string{
         let holder2Text = this.currentWeapon.double ? "-" + this.currentWeapon.holder2 : ""
