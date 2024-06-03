@@ -30,10 +30,10 @@ export class Preloader extends Scene
         this.load.image('aim_cursor', 'aim_cursor.png');
         this.load.image('muzzle_fire', 'muzzle_fire1.png');
         this.load.image('bulletLine', 'bulletLine.png');
-        this.load.image('player', 'player.png');
         this.load.image('background_grass', 'background_grass.png');
         this.load.image('palm', 'palm.png');
         this.load.image('palm_shadow', 'palm_shadow.png');
+        this.load.spritesheet("player","player.png",{frameWidth:178,frameHeight:134})
         this.load.spritesheet("weapons_icons","weapons_icons.png",{frameWidth:200,frameHeight:207})
     }
 

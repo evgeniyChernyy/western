@@ -18,7 +18,7 @@ export class Player extends Physics.Matter.Sprite{
     weaponAmmoUIText : GameObjects.Text
 
     constructor(config) {
-        super(config.scene.matter.world,config.x,config.y,"player",null,{
+        super(config.scene.matter.world,config.x,config.y,"player",0,{
             shape:{ type: 'circle', radius:65 },
             render: { sprite: { xOffset: -0.1 } },
             frictionAir:0
@@ -31,7 +31,7 @@ export class Player extends Physics.Matter.Sprite{
         this.canShoot = true
 
         this.weapons = weapons
-        this.currentWeaponLabel = "pistols"
+        this.currentWeaponLabel = "singlePistol"
         this.currentWeapon = weapons[this.currentWeaponLabel]
 
         // weapon UI
@@ -42,11 +42,11 @@ export class Player extends Physics.Matter.Sprite{
             this.currentWeapon.spriteIndex
         ).setOrigin(1,1).setScale(.5).setScrollFactor(0).setDepth(UI_DEPTH)
         this.weaponAmmoUIText = config.scene.add.text(
-            config.scene.game.config.canvas.width - 30,
+            this.weaponIcon.getBottomCenter().x,
             config.scene.game.config.canvas.height - 30,
             this.getAmmoUIText(),
             {fontSize:28,color:UI_COLOR_RED_CSS,fontFamily:"Arial, sans-serif"}
-        ).setOrigin(1,1).setScrollFactor(0).setDepth(UI_DEPTH)
+        ).setOrigin(.5,1).setScrollFactor(0).setDepth(UI_DEPTH)
 
         // muzzle fire
         this.muzzleFire = config.scene.add.image(0,0,"muzzle_fire").setVisible(false).setScale(.4,.4).setOrigin(0,.5)
@@ -97,23 +97,23 @@ export class Player extends Physics.Matter.Sprite{
         let holder2Text = this.currentWeapon.double ? "-" + this.currentWeapon.holder2 : ""
         return this.currentWeapon.holder1 + holder2Text + "/" + this.currentWeapon.ammo
     }
-    shoot(pistolIndex = 1){
+    shoot(weaponIndex = 1){
         // no ammo
-        if(this.currentWeapon["holder" + pistolIndex] === 0){
+        if(this.currentWeapon["holder" + weaponIndex] === 0){
             l("no ammo")
             return
         }
 
         // update state and ui
         this.canShoot = false
-        this.currentWeapon["holder" + pistolIndex]--
+        this.currentWeapon["holder" + weaponIndex]--
         this.weaponAmmoUIText.setText(this.getAmmoUIText())
 
         this.scene.cameras.main.shake(this.currentWeapon.shakeDuration,this.currentWeapon.shakeIntensity,true);
 
         // muzzle effect and bullet
-        let muzzleX = this.currentWeapon["offsetX" + pistolIndex] * Math.cos(this.rotation) - this.currentWeapon["offsetY" + pistolIndex] * Math.sin(this.rotation),
-            muzzleY = this.currentWeapon["offsetX" + pistolIndex] * Math.sin(this.rotation) + this.currentWeapon["offsetY" + pistolIndex] * Math.cos(this.rotation)
+        let muzzleX = this.currentWeapon["offsetX" + weaponIndex] * Math.cos(this.rotation) - this.currentWeapon["offsetY" + weaponIndex] * Math.sin(this.rotation),
+            muzzleY = this.currentWeapon["offsetX" + weaponIndex] * Math.sin(this.rotation) + this.currentWeapon["offsetY" + weaponIndex] * Math.cos(this.rotation)
         this.muzzleFire.setPosition(this.x + muzzleX,this.y + muzzleY)
         this.muzzleFire.rotation = this.rotation
         this.muzzleFire.setVisible(true)
@@ -144,7 +144,7 @@ export class Player extends Physics.Matter.Sprite{
             callback:()=>{
                 this.canShoot = true
 
-                if(pistolIndex === 1){
+                if(this.currentWeapon.double && weaponIndex === 1){
                     this.shoot(2)
                 }
             },
