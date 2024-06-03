@@ -1,7 +1,9 @@
-import {Physics} from "phaser";
-import {BULLET_SPEED} from "../constants"
+import {Physics, Time} from "phaser";
 
 export class Bullet extends Physics.Matter.Image{
+
+    lifespanEvent : Time.TimerEvent
+
     constructor(config) {
         super(config.scene.matter.world,config.x,config.y,"bulletLine",null,{
             frictionAir:0,
@@ -9,12 +11,14 @@ export class Bullet extends Physics.Matter.Image{
         })
 
         this.setRotation(config.rotation)
-        this.setVelocity(BULLET_SPEED * Math.cos(config.rotation),BULLET_SPEED * Math.sin(config.rotation));
+        this.setVelocity(config.speed * Math.cos(config.rotation),config.speed * Math.sin(config.rotation));
         this.setName("bullet")
 
         config.scene.add.existing(this)
+
+        this.startLifespan(config.lifespan)
     }
-    fire(x,y,rotation){
+    fire(x,y,rotation,lifespan,speed){
         this.setAngularVelocity(0)
         this.setPosition(x, y);
 
@@ -24,11 +28,22 @@ export class Bullet extends Physics.Matter.Image{
         this.setVisible(true);
 
         this.setRotation(rotation)
-        this.setVelocity(BULLET_SPEED * Math.cos(rotation),BULLET_SPEED * Math.sin(rotation));
+        this.setVelocity(speed * Math.cos(rotation),speed * Math.sin(rotation));
+
+        this.startLifespan(lifespan)
+    }
+    startLifespan(lifespan : number) : void{
+        this.lifespanEvent = this.scene.time.addEvent({
+            delay:lifespan,
+            callback:this.deactivate,
+            callbackScope:this
+        })
     }
     deactivate(){
         this.setActive(false);
         this.setVisible(false);
         this.world.remove(this.body, true);
+
+        this.scene.time.removeEvent(this.lifespanEvent)
     }
 }

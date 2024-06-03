@@ -6,4 +6,3 @@ export const PLAYER_SPEED = 3
 
 // other gameobjects and characters
 export const UI_DEPTH = 200
-export const BULLET_SPEED = 5

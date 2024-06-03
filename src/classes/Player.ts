@@ -1,6 +1,7 @@
 import { Physics, GameObjects, Input } from 'phaser';
 import {PLAYER_DEPTH, PLAYER_SPEED, UI_DEPTH} from "../constants"
 import {Bullet} from "../classes/Bullet";
+import {weapons} from "../data/weapons"
 
 export class Player extends Physics.Matter.Sprite{
 
@@ -10,6 +11,7 @@ export class Player extends Physics.Matter.Sprite{
     bullets : Array<Bullet>
     moveKeys : object
     canShoot : boolean
+    weapons : object
     currentWeapon : object
 
     constructor(config) {
@@ -24,16 +26,8 @@ export class Player extends Physics.Matter.Sprite{
         // config and state
         this.bullets = []
         this.canShoot = true
-        this.currentWeapon = {
-            name:"pistols",
-            shootDelay:300,
-            shakeDuration:25,
-            shakeIntensity:0.01,
-            offsetX1:50,
-            offsetY1:20,
-            offsetX2:50,
-            offsetY2:-20,
-        }
+        this.weapons = weapons
+        this.currentWeapon = weapons["pistols"]
 
         // muzzle fire
         this.muzzleFire = config.scene.add.image(0,0,"muzzle_fire").setVisible(false).setScale(.4,.4).setOrigin(0,.5)
@@ -94,13 +88,21 @@ export class Player extends Physics.Matter.Sprite{
         let bullet = this.bullets.find(bullet => !bullet.active)
         if (bullet)
         {
-            bullet.fire(this.x + muzzleX,this.y + muzzleY,this.rotation);
+            bullet.fire(
+                this.x + muzzleX,
+                this.y + muzzleY,
+                this.rotation,
+                this.currentWeapon.bulletLifespan,
+                this.currentWeapon.bulletSpeed
+            );
         } else {
             this.bullets.push(new Bullet({
                 scene:this.scene,
                 x:this.x + muzzleX,
                 y:this.y + muzzleY,
                 rotation:this.rotation,
+                lifespan:this.currentWeapon.bulletLifespan,
+                speed:this.currentWeapon.bulletSpeed
             }))
         }
 
