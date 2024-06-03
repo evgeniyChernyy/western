@@ -1,5 +1,5 @@
 import { Physics, GameObjects, Input } from 'phaser';
-import {PLAYER_DEPTH, PLAYER_SPEED, UI_DEPTH} from "../constants"
+import {PLAYER_DEPTH, PLAYER_SPEED, UI_COLOR_DARK_RED_CSS, UI_COLOR_RED_CSS, UI_DEPTH} from "../constants"
 import {Bullet} from "../classes/Bullet";
 import {weapons} from "../data/weapons"
 
@@ -12,7 +12,10 @@ export class Player extends Physics.Matter.Sprite{
     moveKeys : object
     canShoot : boolean
     weapons : object
+    currentWeaponLabel : string
     currentWeapon : object
+    weaponIcon : GameObjects.Image
+    weaponAmmoUIText : GameObjects.Text
 
     constructor(config) {
         super(config.scene.matter.world,config.x,config.y,"player",null,{
@@ -23,11 +26,27 @@ export class Player extends Physics.Matter.Sprite{
 
         this.setScale(.5,.5).setDepth(PLAYER_DEPTH)
 
-        // config and state
+        // config, inventory, state
         this.bullets = []
         this.canShoot = true
+
         this.weapons = weapons
-        this.currentWeapon = weapons["pistols"]
+        this.currentWeaponLabel = "pistols"
+        this.currentWeapon = weapons[this.currentWeaponLabel]
+
+        // weapon UI
+        this.weaponIcon = config.scene.add.sprite(
+            config.scene.game.config.canvas.width - 20,
+            config.scene.game.config.canvas.height - 50,
+            "weapons_icons",
+            this.currentWeapon.spriteIndex
+        ).setOrigin(1,1).setScale(.5).setScrollFactor(0).setDepth(UI_DEPTH)
+        this.weaponAmmoUIText = config.scene.add.text(
+            config.scene.game.config.canvas.width - 30,
+            config.scene.game.config.canvas.height - 30,
+            this.getAmmoUIText(),
+            {fontSize:28,color:UI_COLOR_RED_CSS,fontFamily:"Arial, sans-serif"}
+        ).setOrigin(1,1).setScrollFactor(0).setDepth(UI_DEPTH)
 
         // muzzle fire
         this.muzzleFire = config.scene.add.image(0,0,"muzzle_fire").setVisible(false).setScale(.4,.4).setOrigin(0,.5)
@@ -74,11 +93,25 @@ export class Player extends Physics.Matter.Sprite{
             }
         });
     }
+    getAmmoUIText() : string{
+        let holder2Text = this.currentWeapon.double ? "-" + this.currentWeapon.holder2 : ""
+        return this.currentWeapon.holder1 + holder2Text + "/" + this.currentWeapon.ammo
+    }
     shoot(pistolIndex = 1){
+        // no ammo
+        if(this.currentWeapon["holder" + pistolIndex] === 0){
+            l("no ammo")
+            return
+        }
+
+        // update state and ui
         this.canShoot = false
+        this.currentWeapon["holder" + pistolIndex]--
+        this.weaponAmmoUIText.setText(this.getAmmoUIText())
 
         this.scene.cameras.main.shake(this.currentWeapon.shakeDuration,this.currentWeapon.shakeIntensity,true);
 
+        // muzzle effect and bullet
         let muzzleX = this.currentWeapon["offsetX" + pistolIndex] * Math.cos(this.rotation) - this.currentWeapon["offsetY" + pistolIndex] * Math.sin(this.rotation),
             muzzleY = this.currentWeapon["offsetX" + pistolIndex] * Math.sin(this.rotation) + this.currentWeapon["offsetY" + pistolIndex] * Math.cos(this.rotation)
         this.muzzleFire.setPosition(this.x + muzzleX,this.y + muzzleY)

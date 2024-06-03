@@ -34,6 +34,7 @@ export class Preloader extends Scene
         this.load.image('background_grass', 'background_grass.png');
         this.load.image('palm', 'palm.png');
         this.load.image('palm_shadow', 'palm_shadow.png');
+        this.load.spritesheet("weapons_icons","weapons_icons.png",{frameWidth:200,frameHeight:207})
     }
 
     create ()
