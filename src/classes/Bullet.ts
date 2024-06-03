@@ -4,7 +4,8 @@ import {BULLET_SPEED} from "../constants"
 export class Bullet extends Physics.Matter.Image{
     constructor(config) {
         super(config.scene.matter.world,config.x,config.y,"bulletLine",null,{
-            frictionAir:0
+            frictionAir:0,
+            label:"bullet"
         })
 
         this.setRotation(config.rotation)

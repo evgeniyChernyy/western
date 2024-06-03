@@ -47,10 +47,10 @@ export class Main extends Scene
         // bullet and world bounds
         this.matter.world.on('collisionstart', (event, bodyA, bodyB) =>
         {
-            if(bodyA.gameObject === null && bodyB.gameObject.name === "bullet" ||
-                bodyB.gameObject === null && bodyA.gameObject.name === "bullet"){
-                bodyA?.gameObject?.deactivate()
-                bodyB?.gameObject?.deactivate()
+            if(bodyA.isStatic && bodyB.label === "bullet" ||
+                bodyB.isStatic && bodyA.label === "bullet"){
+                bodyA.gameObject?.deactivate?.()
+                bodyB.gameObject?.deactivate?.()
             }
         });
     }
@@ -63,7 +63,8 @@ export class Main extends Scene
                         type: 'circle',
                         radius: 20
                     },
-                    isStatic:true
+                    isStatic:true,
+                    label:"tree"
                 }).setDepth(PLAYER_DEPTH + 1)
                 if(Phaser.Math.Between(0,1)){
                     let config = {
