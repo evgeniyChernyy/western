@@ -7,6 +7,7 @@ export class Player extends Physics.Matter.Sprite{
     muzzleFire : GameObjects.Image
     aim : GameObjects.Image
 
+    bullets : Array<Bullet>
     moveKeys : object
     canShoot : boolean
     currentWeapon : object
@@ -21,6 +22,7 @@ export class Player extends Physics.Matter.Sprite{
         this.setScale(.5,.5).setDepth(PLAYER_DEPTH)
 
         // config and state
+        this.bullets = []
         this.canShoot = true
         this.currentWeapon = {
             name:"pistols",
@@ -89,16 +91,18 @@ export class Player extends Physics.Matter.Sprite{
         this.muzzleFire.rotation = this.rotation
         this.muzzleFire.setVisible(true)
 
-        new Bullet({
-            scene:this.scene,
-            x:this.x + muzzleX,
-            y:this.y + muzzleY,
-            rotation:this.rotation,
-            forceVector:{
-                x:this.aim.x,
-                y:this.aim.y,
-            }
-        })
+        let bullet = this.bullets.find(bullet => !bullet.active)
+        if (bullet)
+        {
+            bullet.fire(this.x + muzzleX,this.y + muzzleY,this.rotation);
+        } else {
+            this.bullets.push(new Bullet({
+                scene:this.scene,
+                x:this.x + muzzleX,
+                y:this.y + muzzleY,
+                rotation:this.rotation,
+            }))
+        }
 
         this.scene.time.addEvent({
             delay:this.currentWeapon.shootDelay,

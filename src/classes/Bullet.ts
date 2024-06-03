@@ -13,4 +13,21 @@ export class Bullet extends Physics.Matter.Image{
 
         config.scene.add.existing(this)
     }
+    fire(x,y,rotation){
+        this.setAngularVelocity(0)
+        this.setPosition(x, y);
+
+        // show bullet
+        this.world.add(this.body);
+        this.setActive(true);
+        this.setVisible(true);
+
+        this.setRotation(rotation)
+        this.setVelocity(BULLET_SPEED * Math.cos(rotation),BULLET_SPEED * Math.sin(rotation));
+    }
+    deactivate(){
+        this.setActive(false);
+        this.setVisible(false);
+        this.world.remove(this.body, true);
+    }
 }

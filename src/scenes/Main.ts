@@ -49,8 +49,8 @@ export class Main extends Scene
         {
             if(bodyA.gameObject === null && bodyB.gameObject.name === "bullet" ||
                 bodyB.gameObject === null && bodyA.gameObject.name === "bullet"){
-                bodyA?.gameObject?.destroy()
-                bodyB?.gameObject?.destroy()
+                bodyA?.gameObject?.deactivate()
+                bodyB?.gameObject?.deactivate()
             }
         });
     }
