@@ -20,7 +20,7 @@ export class Player extends Physics.Matter.Sprite{
     weaponAmmoUIText : GameObjects.Text
 
     constructor(config) {
-        super(config.scene.matter.world,config.x,config.y,"player",1,{
+        super(config.scene.matter.world,config.x,config.y,"player",0,{
             shape:{ type: 'circle', radius:65 },
             render: { sprite: { xOffset: -0.1 } },
             frictionAir:0
@@ -34,7 +34,7 @@ export class Player extends Physics.Matter.Sprite{
         this.canShoot = true
 
         this.weapons = weapons
-        this.currentWeaponLabel = "pistols"
+        this.currentWeaponLabel = "singlePistol"
         this.currentWeapon = weapons[this.currentWeaponLabel]
 
         // weapon UI
@@ -59,7 +59,32 @@ export class Player extends Physics.Matter.Sprite{
 
         config.scene.add.existing(this)
 
+        this.createAnimations()
         this.initControls(config.scene)
+    }
+    createAnimations() : void{
+        this.anims.create({
+            key: 'reloadTransition',
+            frames: this.anims.generateFrameNumbers('player', { frames: [ 2 ] }),
+            frameRate: 8,
+        })
+        this.anims.create({
+            key: 'reload',
+            frames: this.anims.generateFrameNumbers('player', { frames: [ 3, 4 ] }),
+            frameRate: 4,
+            repeat:-1
+        })
+
+        this.on(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation)=>{
+            if(animation.key === "reloadTransition"){
+                if(this.state === "reload"){
+                    this.play("reload")
+                }
+                if(this.state === "idle"){
+                    this.setFrame(this.currentWeapon.spriteIndex)
+                }
+            }
+        }, this)
     }
     initControls(scene){
         scene.game.canvas.addEventListener('mousedown', () => {
@@ -99,9 +124,12 @@ export class Player extends Physics.Matter.Sprite{
         });
     }
     reload(){
+        if(this.currentWeapon.ammo === 0 || this.state === "reload") return
+
         this.state = "reload"
         this.canShoot = false
 
+        this.play("reloadTransition")
         this.scene.time.addEvent({
             delay:this.currentWeapon.reloadTime,
             callback:()=>{
@@ -126,6 +154,8 @@ export class Player extends Physics.Matter.Sprite{
                 }
 
                 this.weaponAmmoUIText.setText(this.getAmmoUIText())
+                this.stop()
+                this.play("reloadTransition")
             },
         })
     }
