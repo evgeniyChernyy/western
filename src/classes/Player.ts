@@ -124,7 +124,8 @@ export class Player extends Physics.Matter.Sprite{
         });
     }
     reload(){
-        if(this.currentWeapon.ammo === 0 || this.state === "reload") return
+        if(this.currentWeapon.ammo === 0 || this.state === "reload" ||
+        this.currentWeapon.holder1 === this.currentWeapon.holderQuantity) return
 
         this.state = "reload"
         this.canShoot = false
@@ -137,20 +138,21 @@ export class Player extends Physics.Matter.Sprite{
                 this.canShoot = true
 
                 let ammoQuantityIndex = this.currentWeapon.double ? 2 : 1,
-                    ammoQuantity = this.currentWeapon.ammo >= this.currentWeapon.holderQuantity * ammoQuantityIndex ?
-                    this.currentWeapon.holderQuantity * ammoQuantityIndex : this.currentWeapon.ammo
+                    requiredAmmo = (this.currentWeapon.holderQuantity - this.currentWeapon.holder1) * ammoQuantityIndex,
+                    ammoQuantity = this.currentWeapon.ammo >= requiredAmmo ? requiredAmmo : this.currentWeapon.ammo
 
                 this.currentWeapon.ammo -= ammoQuantity
 
                 if(this.currentWeapon.double){
                     if(ammoQuantity % 2 === 0){
-                        this.currentWeapon.holder1 = this.currentWeapon.holder2 = ammoQuantity / 2
+                        this.currentWeapon.holder1 += ammoQuantity / 2
+                        this.currentWeapon.holder2 += ammoQuantity / 2
                     } else {
-                        this.currentWeapon.holder1 = Math.ceil(ammoQuantity / 2)
-                        this.currentWeapon.holder2 = ammoQuantity - this.currentWeapon.holder1
+                        this.currentWeapon.holder1 += Math.ceil(ammoQuantity / 2)
+                        this.currentWeapon.holder2 += ammoQuantity - this.currentWeapon.holder1
                     }
                 } else {
-                    this.currentWeapon.holder1 = ammoQuantity
+                    this.currentWeapon.holder1 += ammoQuantity
                 }
 
                 this.weaponAmmoUIText.setText(this.getAmmoUIText())
