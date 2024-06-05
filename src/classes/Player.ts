@@ -19,9 +19,9 @@ export class Player extends Physics.Matter.Sprite{
     weaponAmmoUIText : GameObjects.Text
 
     constructor(config) {
-        super(config.scene.matter.world,config.x,config.y,"player",0,{
+        super(config.scene.matter.world,config.x,config.y,"player",2,{
             shape:{ type: 'circle', radius:65 },
-            render: { sprite: { xOffset: -0.1 } },
+            render: { sprite: { xOffset: -0.15 } },
             frictionAir:0
         })
 
@@ -33,7 +33,7 @@ export class Player extends Physics.Matter.Sprite{
         this.canShoot = true
 
         this.weapons = weapons
-        this.currentWeapon = weapons["singlePistol"]
+        this.currentWeapon = weapons["rifle"]
 
         // weapon UI
         this.weaponIcon = config.scene.add.sprite(
@@ -63,23 +63,23 @@ export class Player extends Physics.Matter.Sprite{
     createAnimations() : void{
         this.anims.create({
             key: 'singlePistolReloadTransition',
-            frames: this.anims.generateFrameNumbers('player', { frames: [ 2 ] }),
+            frames: this.anims.generateFrameNumbers('player', { frames: [ 3 ] }),
             frameRate: 8,
         })
         this.anims.create({
             key: 'pistolsReloadTransition',
-            frames: this.anims.generateFrameNumbers('player', { frames: [ 5 ] }),
+            frames: this.anims.generateFrameNumbers('player', { frames: [ 4 ] }),
             frameRate: 8,
         })
         this.anims.create({
             key: 'singlePistolReload',
-            frames: this.anims.generateFrameNumbers('player', { frames: [ 3, 4 ] }),
+            frames: this.anims.generateFrameNumbers('player', { frames: [ 6, 7 ] }),
             frameRate: 4,
             repeat:-1
         })
         this.anims.create({
             key: 'pistolsReload',
-            frames: this.anims.generateFrameNumbers('player', { frames: [ 6, 7 ] }),
+            frames: this.anims.generateFrameNumbers('player', { frames: [ 8, 9 ] }),
             frameRate: 4,
             repeat:-1
         })
