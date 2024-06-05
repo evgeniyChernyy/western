@@ -12,7 +12,7 @@ let weapons = [
         bulletSpeed:25,
         reloadTime:3000,
         spriteIndex:0,
-        ammo:28,
+        ammoType:".44",
         holderQuantity:6,
         holder1:6,
     },
@@ -33,7 +33,7 @@ let weapons = [
         bulletSpeed:25,
         reloadTime:7000,
         spriteIndex:1,
-        ammo:28,
+        ammoType:".44",
         holderQuantity:6,
         holder1:6,
         holder2:6,
@@ -41,7 +41,7 @@ let weapons = [
     {
         type:"weapon",
         label:"rifle",
-        name:"Winchester 1866",
+        name:"Winchester 1873",
         twoHanded:true,
         shootDelay:800,
         shakeDuration:40,
@@ -52,10 +52,13 @@ let weapons = [
         bulletSpeed:40,
         reloadTime:4000,
         spriteIndex:2,
-        ammo:24,
+        ammoType:".44",
         holderQuantity:12,
         holder1:12,
     }
-]
+],
+    ammo = {
+    ".44":80,
+    }
 
-export {weapons}
+export {weapons,ammo}

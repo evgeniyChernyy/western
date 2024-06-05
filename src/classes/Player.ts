@@ -1,7 +1,7 @@
 import { Physics, GameObjects, Input } from 'phaser';
 import {PLAYER_DEPTH, PLAYER_SPEED, UI_COLOR_DARK_RED_CSS, UI_COLOR_RED_CSS, UI_DEPTH} from "../constants"
 import {Bullet} from "../classes/Bullet";
-import {weapons} from "../data/weapons"
+import {weapons,ammo} from "../data/weapons"
 
 export class Player extends Physics.Matter.Sprite{
 
@@ -13,7 +13,8 @@ export class Player extends Physics.Matter.Sprite{
     bullets : Array<Bullet>
     controlKeys : object
     canShoot : boolean
-    weapons : object
+    ammo : object
+    weapons : Array<object>
     currentWeapon : object
     weaponIcon : GameObjects.Image
     weaponAmmoUIText : GameObjects.Text
@@ -33,6 +34,7 @@ export class Player extends Physics.Matter.Sprite{
         this.bullets = []
         this.canShoot = true
 
+        this.ammo = ammo
         this.weapons = weapons
         this.currentWeapon = this.weapons[0]
 
@@ -189,7 +191,7 @@ export class Player extends Physics.Matter.Sprite{
         this.weaponIcon.setFrame(this.currentWeapon.spriteIndex)
     }
     reload(){
-        if(this.currentWeapon.ammo === 0 || this.state === "reload" ||
+        if(this.ammo[this.currentWeapon.ammoType] === 0 || this.state === "reload" ||
         this.currentWeapon.holder1 === this.currentWeapon.holderQuantity) return
 
         this.state = "reload"
@@ -204,9 +206,9 @@ export class Player extends Physics.Matter.Sprite{
 
                 let ammoQuantityIndex = this.currentWeapon.double ? 2 : 1,
                     requiredAmmo = (this.currentWeapon.holderQuantity - this.currentWeapon.holder1) * ammoQuantityIndex,
-                    ammoQuantity = this.currentWeapon.ammo >= requiredAmmo ? requiredAmmo : this.currentWeapon.ammo
+                    ammoQuantity = this.ammo[this.currentWeapon.ammoType] >= requiredAmmo ? requiredAmmo : this.ammo[this.currentWeapon.ammoType]
 
-                this.currentWeapon.ammo -= ammoQuantity
+                this.ammo[this.currentWeapon.ammoType] -= ammoQuantity
 
                 if(this.currentWeapon.double){
                     if(ammoQuantity % 2 === 0){
@@ -228,7 +230,7 @@ export class Player extends Physics.Matter.Sprite{
     }
     getAmmoUIText() : string{
         let holder2Text = this.currentWeapon.double ? "-" + this.currentWeapon.holder2 : ""
-        return this.currentWeapon.holder1 + holder2Text + "/" + this.currentWeapon.ammo
+        return this.currentWeapon.holder1 + holder2Text + "/" + this.ammo[this.currentWeapon.ammoType]
     }
     shoot(weaponIndex = 1){
         // no ammo
