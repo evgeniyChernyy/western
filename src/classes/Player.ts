@@ -72,6 +72,11 @@ export class Player extends Physics.Matter.Sprite{
             frameRate: 8,
         })
         this.anims.create({
+            key: 'rifleReloadTransition',
+            frames: this.anims.generateFrameNumbers('player', { frames: [ 5 ] }),
+            frameRate: 8,
+        })
+        this.anims.create({
             key: 'singlePistolReload',
             frames: this.anims.generateFrameNumbers('player', { frames: [ 6, 7 ] }),
             frameRate: 4,
@@ -80,6 +85,12 @@ export class Player extends Physics.Matter.Sprite{
         this.anims.create({
             key: 'pistolsReload',
             frames: this.anims.generateFrameNumbers('player', { frames: [ 8, 9 ] }),
+            frameRate: 4,
+            repeat:-1
+        })
+        this.anims.create({
+            key: 'rifleReload',
+            frames: this.anims.generateFrameNumbers('player', { frames: [ 10, 11 ] }),
             frameRate: 4,
             repeat:-1
         })
