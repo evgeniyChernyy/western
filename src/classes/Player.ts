@@ -17,9 +17,10 @@ export class Player extends Physics.Matter.Sprite{
     currentWeapon : object
     weaponIcon : GameObjects.Image
     weaponAmmoUIText : GameObjects.Text
+    weaponNameUIText : GameObjects.Text
 
     constructor(config) {
-        super(config.scene.matter.world,config.x,config.y,"player",2,{
+        super(config.scene.matter.world,config.x,config.y,"player",0,{
             shape:{ type: 'circle', radius:65 },
             render: { sprite: { xOffset: -0.15 } },
             frictionAir:0
@@ -33,21 +34,27 @@ export class Player extends Physics.Matter.Sprite{
         this.canShoot = true
 
         this.weapons = weapons
-        this.currentWeapon = weapons["rifle"]
+        this.currentWeapon = this.getWeaponByLabel("singlePistol")
 
         // weapon UI
         this.weaponIcon = config.scene.add.sprite(
             config.scene.game.config.canvas.width - 20,
-            config.scene.game.config.canvas.height - 50,
+            config.scene.game.config.canvas.height - 60,
             "weapons_icons",
             this.currentWeapon.spriteIndex
         ).setOrigin(1,1).setScale(.5).setScrollFactor(0).setDepth(UI_DEPTH)
         this.weaponAmmoUIText = config.scene.add.text(
             this.weaponIcon.getBottomCenter().x,
-            config.scene.game.config.canvas.height - 30,
+            config.scene.game.config.canvas.height - 40,
             this.getAmmoUIText(),
             {fontSize:28,color:UI_COLOR_RED_CSS,fontFamily:"Arial, sans-serif"}
         ).setOrigin(.5,1).setScrollFactor(0).setDepth(UI_DEPTH)
+        this.weaponNameUIText = config.scene.add.text(
+            this.weaponAmmoUIText.getBottomRight().x,
+            config.scene.game.config.canvas.height - 15,
+            this.currentWeapon.name,
+            {fontSize:24,color:UI_COLOR_RED_CSS,fontFamily:"Arial, sans-serif"}
+        ).setOrigin(1,1).setScrollFactor(0).setDepth(UI_DEPTH)
 
         // muzzle fire
         this.muzzleFire = config.scene.add.image(0,0,"muzzle_fire").setVisible(false).setScale(.4,.4).setOrigin(0,.5)
@@ -59,6 +66,7 @@ export class Player extends Physics.Matter.Sprite{
 
         this.createAnimations()
         this.initControls(config.scene)
+        this.initWeaponsSelect()
     }
     createAnimations() : void{
         this.anims.create({
@@ -96,9 +104,9 @@ export class Player extends Physics.Matter.Sprite{
         })
 
         this.on(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation)=>{
-            if(animation.key === this.currentWeapon.name + "ReloadTransition"){
+            if(animation.key === this.currentWeapon.label + "ReloadTransition"){
                 if(this.state === "reload"){
-                    this.play(this.currentWeapon.name + "Reload")
+                    this.play(this.currentWeapon.label + "Reload")
                 }
                 if(this.state === "idle"){
                     this.setFrame(this.currentWeapon.spriteIndex)
@@ -143,6 +151,36 @@ export class Player extends Physics.Matter.Sprite{
             }
         });
     }
+    getWeaponByLabel(label : string){
+        return this.weapons.find((el) => el.label === label)
+    }
+    initWeaponsSelect(){
+        this.scene.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) =>
+        {
+            this.selectWeapon(deltaY > 0)
+        });
+    }
+    selectWeapon(next : boolean = true){
+        let currentWeaponIndex = this.weapons.findIndex((el) => el === this.currentWeapon),
+            newCurrentWeaponIndex = null
+
+        if(next){
+            newCurrentWeaponIndex = currentWeaponIndex + 1
+        } else {
+            newCurrentWeaponIndex = currentWeaponIndex - 1
+        }
+
+        if(newCurrentWeaponIndex >= this.weapons.length) newCurrentWeaponIndex = 0
+        if(newCurrentWeaponIndex < 0) newCurrentWeaponIndex = this.weapons.length - 1
+
+        this.currentWeapon = this.weapons[newCurrentWeaponIndex]
+
+        // update UI and sprites
+        this.weaponAmmoUIText.setText(this.getAmmoUIText())
+        this.weaponNameUIText.setText(this.currentWeapon.name)
+        this.setFrame(this.currentWeapon.spriteIndex)
+        this.weaponIcon.setFrame(this.currentWeapon.spriteIndex)
+    }
     reload(){
         if(this.currentWeapon.ammo === 0 || this.state === "reload" ||
         this.currentWeapon.holder1 === this.currentWeapon.holderQuantity) return
@@ -150,7 +188,7 @@ export class Player extends Physics.Matter.Sprite{
         this.state = "reload"
         this.canShoot = false
 
-        this.play(this.currentWeapon.name + "ReloadTransition")
+        this.play(this.currentWeapon.label + "ReloadTransition")
         this.scene.time.addEvent({
             delay:this.currentWeapon.reloadTime,
             callback:()=>{
@@ -177,7 +215,7 @@ export class Player extends Physics.Matter.Sprite{
 
                 this.weaponAmmoUIText.setText(this.getAmmoUIText())
                 this.stop()
-                this.play(this.currentWeapon.name + "ReloadTransition")
+                this.play(this.currentWeapon.label + "ReloadTransition")
             },
         })
     }

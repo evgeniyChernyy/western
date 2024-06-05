@@ -1,7 +1,8 @@
-let weapons = {
-    singlePistol:{
+let weapons = [
+    {
         type:"weapon",
-        name:"singlePistol",
+        label:"singlePistol",
+        name:"Colt Peacemaker 1873",
         shootDelay:300,
         shakeDuration:25,
         shakeIntensity:0.01,
@@ -15,9 +16,10 @@ let weapons = {
         holderQuantity:6,
         holder1:6,
     },
-    pistols:{
+    {
         type:"weapon",
-        name:"pistols",
+        label:"pistols",
+        name:"Dual Colts",
         double:true,
         twoHanded:true,
         shootDelay:300,
@@ -36,9 +38,10 @@ let weapons = {
         holder1:6,
         holder2:6,
     },
-    rifle:{
+    {
         type:"weapon",
-        name:"rifle",
+        label:"rifle",
+        name:"Winchester 1866",
         twoHanded:true,
         shootDelay:800,
         shakeDuration:40,
@@ -53,6 +56,6 @@ let weapons = {
         holderQuantity:12,
         holder1:12,
     }
-}
+]
 
 export {weapons}
