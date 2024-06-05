@@ -35,9 +35,12 @@ export class Main extends Scene
         this.treesLayer = this.map.getObjectLayer("trees");
         this.addTrees()
 
-       // player
+       // player and cursor pointer lock
         this.charactersLayer = this.map.getObjectLayer("characters")
         this.addCharacters()
+        this.game.canvas.addEventListener('mousedown', () => {
+            this.game.input.mouse.requestPointerLock();
+        });
 
         // camera
         this.cameras.main.setBounds(0,0,this.map.widthInPixels,this.map.heightInPixels)
@@ -67,6 +70,7 @@ export class Main extends Scene
                     isStatic:true,
                     label:"tree"
                 }).setDepth(PLAYER_DEPTH + 1).setScale(1.4,1.4)
+
                 if(Phaser.Math.Between(0,1)){
                     let config = {
                         targets:[tree,shadow],

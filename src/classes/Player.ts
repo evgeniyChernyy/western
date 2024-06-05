@@ -34,41 +34,42 @@ export class Player extends Physics.Matter.Sprite{
         this.canShoot = true
 
         this.weapons = weapons
-        this.currentWeapon = this.getWeaponByLabel("singlePistol")
+        this.currentWeapon = this.weapons[0]
 
-        // weapon UI
+        // muzzle fire and aim
+        this.muzzleFire = config.scene.add.image(0,0,"muzzle_fire").setVisible(false).setScale(.4,.4).setOrigin(0,.5)
+        this.aim = config.scene.add.image(this.x + 100,this.y,"aim_cursor").setScale(.75,.75).setDepth(UI_DEPTH)
+
+        config.scene.add.existing(this)
+
+        this.createWeaponUI(config)
+        this.createAnimations()
+        this.initControls(config.scene)
+        this.initWeaponsSelect()
+    }
+    createWeaponUI(config : object){
         this.weaponIcon = config.scene.add.sprite(
             config.scene.game.config.canvas.width - 20,
             config.scene.game.config.canvas.height - 60,
             "weapons_icons",
             this.currentWeapon.spriteIndex
         ).setOrigin(1,1).setScale(.5).setScrollFactor(0).setDepth(UI_DEPTH)
+
         this.weaponAmmoUIText = config.scene.add.text(
             this.weaponIcon.getBottomCenter().x,
             config.scene.game.config.canvas.height - 40,
             this.getAmmoUIText(),
             {fontSize:28,color:UI_COLOR_RED_CSS,fontFamily:"Arial, sans-serif"}
         ).setOrigin(.5,1).setScrollFactor(0).setDepth(UI_DEPTH)
+
         this.weaponNameUIText = config.scene.add.text(
             this.weaponAmmoUIText.getBottomRight().x,
             config.scene.game.config.canvas.height - 15,
             this.currentWeapon.name,
             {fontSize:24,color:UI_COLOR_RED_CSS,fontFamily:"Arial, sans-serif"}
         ).setOrigin(1,1).setScrollFactor(0).setDepth(UI_DEPTH)
-
-        // muzzle fire
-        this.muzzleFire = config.scene.add.image(0,0,"muzzle_fire").setVisible(false).setScale(.4,.4).setOrigin(0,.5)
-
-        // aim
-        this.aim = config.scene.add.image(this.x + 100,this.y,"aim_cursor").setScale(.75,.75).setDepth(UI_DEPTH)
-
-        config.scene.add.existing(this)
-
-        this.createAnimations()
-        this.initControls(config.scene)
-        this.initWeaponsSelect()
     }
-    createAnimations() : void{
+    createAnimations(){
         this.anims.create({
             key: 'singlePistolReloadTransition',
             frames: this.anims.generateFrameNumbers('player', { frames: [ 3 ] }),
@@ -115,17 +116,13 @@ export class Player extends Physics.Matter.Sprite{
         }, this)
     }
     initControls(scene){
-        scene.game.canvas.addEventListener('mousedown', () => {
-            scene.game.input.mouse.requestPointerLock();
-        });
-
         this.controlKeys = scene.input.keyboard.addKeys({
             up: Phaser.Input.Keyboard.KeyCodes.W,
             down: Phaser.Input.Keyboard.KeyCodes.S,
             left: Phaser.Input.Keyboard.KeyCodes.A,
             right: Phaser.Input.Keyboard.KeyCodes.D,
             reload:Phaser.Input.Keyboard.KeyCodes.R
-        });
+        })
 
         // Enables movement of player with WASD keys
         scene.input.keyboard.on('keydown', event => {
@@ -156,9 +153,6 @@ export class Player extends Physics.Matter.Sprite{
             }
         });
     }
-    getWeaponByLabel(label : string){
-        return this.weapons.find((el) => el.label === label)
-    }
     initWeaponsSelect(){
         this.scene.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) =>
         {
@@ -180,7 +174,6 @@ export class Player extends Physics.Matter.Sprite{
 
         this.currentWeapon = this.weapons[newCurrentWeaponIndex]
 
-        // update UI and sprites
         this.updateWeaponUI()
     }
     toggleWeapon(index : number){
@@ -251,12 +244,9 @@ export class Player extends Physics.Matter.Sprite{
 
         this.scene.cameras.main.shake(this.currentWeapon.shakeDuration,this.currentWeapon.shakeIntensity,true);
 
-        // muzzle effect and bullet
         let muzzleX = this.currentWeapon["offsetX" + weaponIndex] * Math.cos(this.rotation) - this.currentWeapon["offsetY" + weaponIndex] * Math.sin(this.rotation),
             muzzleY = this.currentWeapon["offsetX" + weaponIndex] * Math.sin(this.rotation) + this.currentWeapon["offsetY" + weaponIndex] * Math.cos(this.rotation)
-        this.muzzleFire.setPosition(this.x + muzzleX,this.y + muzzleY)
-        this.muzzleFire.rotation = this.rotation
-        this.muzzleFire.setVisible(true)
+        this.applyMuzzleEffect(muzzleX,muzzleY,weaponIndex)
 
         let bullet = this.bullets.find(bullet => !bullet.active)
         if (bullet)
@@ -289,6 +279,12 @@ export class Player extends Physics.Matter.Sprite{
                 }
             },
         })
+    }
+    applyMuzzleEffect(muzzleX : number, muzzleY : number, weaponIndex : number){
+        this.muzzleFire.setPosition(this.x + muzzleX,this.y + muzzleY)
+        this.muzzleFire.rotation = this.rotation
+        this.muzzleFire.setVisible(true)
+
         this.scene.time.addEvent({
             delay:25,
             callback:()=>{
