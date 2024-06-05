@@ -134,6 +134,11 @@ export class Player extends Physics.Matter.Sprite{
             if (this.controlKeys['left'].isDown && !this.controlKeys['right'].isDown) { this.setVelocityX(-PLAYER_SPEED); }
             if (this.controlKeys['right'].isDown && !this.controlKeys['left'].isDown) { this.setVelocityX(PLAYER_SPEED); }
             if (this.controlKeys['reload'].isDown && this.state !== "reload") { this.reload() }
+
+            // change weapon
+            if("12345".includes(event.key)){
+                this.toggleWeapon(Number(event.key) - 1)
+            }
         });
         scene.input.keyboard.on('keyup', event => {
             if (this.controlKeys['up'].isUp && this.controlKeys['down'].isUp) { this.setVelocityY(0); }
@@ -176,6 +181,15 @@ export class Player extends Physics.Matter.Sprite{
         this.currentWeapon = this.weapons[newCurrentWeaponIndex]
 
         // update UI and sprites
+        this.updateWeaponUI()
+    }
+    toggleWeapon(index : number){
+        if(this.weapons[index]){
+            this.currentWeapon = this.weapons[index]
+            this.updateWeaponUI()
+        }
+    }
+    updateWeaponUI(){
         this.weaponAmmoUIText.setText(this.getAmmoUIText())
         this.weaponNameUIText.setText(this.currentWeapon.name)
         this.setFrame(this.currentWeapon.spriteIndex)
