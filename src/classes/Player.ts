@@ -291,12 +291,13 @@ export class Player extends Physics.Matter.Sprite{
             }))
         }
 
+        let weapon = this.currentWeapon
         this.scene.time.addEvent({
             delay:this.currentWeapon.shootDelay,
             callback:()=>{
                 this.canShoot = true
 
-                if(this.currentWeapon.double && weaponIndex === 1){
+                if(this.currentWeapon.double && weaponIndex === 1 && weapon === this.currentWeapon){
                     this.shoot(2)
                 }
             },
