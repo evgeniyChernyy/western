@@ -108,6 +108,11 @@ export class Player extends Physics.Matter.Sprite{
             frameRate: 4,
             repeat:-1
         })
+        this.anims.create({
+            key: 'dynamiteThrow',
+            frames: this.anims.generateFrameNumbers('player', { frames: [ 13, 14 ] }),
+            frameRate: 8,
+        })
 
         this.on(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation)=>{
             if(animation.key === this.currentWeapon.label + "ReloadTransition"){
@@ -117,6 +122,10 @@ export class Player extends Physics.Matter.Sprite{
                 if(this.state === "idle"){
                     this.setFrame(this.currentWeapon.spriteIndex)
                 }
+            }
+            if(animation.key === this.currentWeapon.label + "Throw"){
+                this.releaseThrowGrenade()
+                this.setFrame(this.currentWeapon.spriteIndex)
             }
         }, this)
     }
@@ -293,7 +302,7 @@ export class Player extends Physics.Matter.Sprite{
             },
         })
     }
-    throwGrenade(grenadeLabel : string){
+    throwGrenade(){
         // no grenade
         if(this.ammo[this.currentWeapon.ammoType] === 0){
             l("no grenade")
@@ -305,10 +314,13 @@ export class Player extends Physics.Matter.Sprite{
         this.ammo[this.currentWeapon.ammoType]--
         this.weaponAmmoUIText.setText(this.getAmmoUIText())
 
+        this.play(this.currentWeapon.label + "Throw")
+    }
+    releaseThrowGrenade(){
         let startX = this.currentWeapon["offsetX"] * Math.cos(this.rotation) - this.currentWeapon["offsetY"] * Math.sin(this.rotation),
             startY = this.currentWeapon["offsetX"] * Math.sin(this.rotation) + this.currentWeapon["offsetY"] * Math.cos(this.rotation)
 
-        let grenade = this.grenades.find(grenade => !grenade.active && grenade.name === grenadeLabel)
+        let grenade = this.grenades.find(grenade => !grenade.active && grenade.name === this.currentWeapon.label)
         if (grenade)
         {
             grenade.fire(
