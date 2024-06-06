@@ -17,6 +17,7 @@ export class Grenade extends Physics.Matter.Sprite{
         this.setRotation(config.rotation)
         this.setVelocity(config.speed * Math.cos(config.rotation),config.speed * Math.sin(config.rotation));
         this.setName(config.label)
+        this.setCollisionGroup(this.scene.bulletsGroup)
 
         config.scene.add.existing(this)
 

@@ -10,6 +10,8 @@ export class Main extends Scene
     charactersLayer : Tilemaps.ObjectLayer
     player : GameObjects.Image
 
+    bulletsGroup : number
+
     constructor ()
     {
         super('Main');
@@ -51,6 +53,7 @@ export class Main extends Scene
 
         // collisions
         // bullet and world bounds
+        this.bulletsGroup = this.matter.world.nextGroup(true)
         this.matter.world.on('collisionstart', (event, bodyA, bodyB) =>
         {
             if(bodyA.isStatic && bodyB.label === "bullet" ||
