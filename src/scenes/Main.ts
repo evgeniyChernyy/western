@@ -31,6 +31,9 @@ export class Main extends Scene
             "background_grass"
             ).setOrigin(0,0).setScrollFactor(0)
 
+        // animations
+        this.createAnimations()
+
         // objects
         this.treesLayer = this.map.getObjectLayer("trees");
         this.addTrees()
@@ -56,6 +59,13 @@ export class Main extends Scene
                 bodyB.gameObject?.deactivate?.()
             }
         });
+    }
+    createAnimations(){
+        this.anims.create({
+            key: 'explosion',
+            frames: this.anims.generateFrameNumbers('explosion'),
+            frameRate: 14,
+        })
     }
     addTrees(){
         this.treesLayer.objects.forEach((object) => {

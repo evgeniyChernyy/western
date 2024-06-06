@@ -1,6 +1,7 @@
 import { Physics, GameObjects, Input } from 'phaser';
 import {PLAYER_DEPTH, PLAYER_SPEED, UI_COLOR_DARK_RED_CSS, UI_COLOR_RED_CSS, UI_DEPTH} from "../constants"
 import {Bullet} from "../classes/Bullet";
+import {Grenade} from "../classes/Grenade";
 import {weapons,ammo} from "../data/weapons"
 
 export class Player extends Physics.Matter.Sprite{
@@ -11,6 +12,7 @@ export class Player extends Physics.Matter.Sprite{
     aim : GameObjects.Image
 
     bullets : Array<Bullet>
+    grenades : Array<Grenade>
     controlKeys : object
     canShoot : boolean
     ammo : object
@@ -32,6 +34,7 @@ export class Player extends Physics.Matter.Sprite{
         // config, inventory, state
         this.state = "idle"
         this.bullets = []
+        this.grenades = []
         this.canShoot = true
 
         this.ammo = ammo
@@ -54,7 +57,7 @@ export class Player extends Physics.Matter.Sprite{
             config.scene.game.config.canvas.width - 20,
             config.scene.game.config.canvas.height - 60,
             "weapons_icons",
-            this.currentWeapon.spriteIndex
+            this.currentWeapon.iconIndex
         ).setOrigin(1,1).setScale(.5).setScrollFactor(0).setDepth(UI_DEPTH)
 
         this.weaponAmmoUIText = config.scene.add.text(
@@ -135,7 +138,7 @@ export class Player extends Physics.Matter.Sprite{
             if (this.controlKeys['reload'].isDown && this.state !== "reload") { this.reload() }
 
             // change weapon
-            if("12345".includes(event.key)){
+            if("12345".includes(event.key) && this.state !== "reload"){
                 this.toggleWeapon(Number(event.key) - 1)
             }
         });
@@ -158,7 +161,9 @@ export class Player extends Physics.Matter.Sprite{
     initWeaponsSelect(){
         this.scene.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) =>
         {
-            this.selectWeapon(deltaY > 0)
+            if(this.state !== "reload"){
+                this.selectWeapon(deltaY > 0)
+            }
         });
     }
     selectWeapon(next : boolean = true){
@@ -188,11 +193,12 @@ export class Player extends Physics.Matter.Sprite{
         this.weaponAmmoUIText.setText(this.getAmmoUIText())
         this.weaponNameUIText.setText(this.currentWeapon.name)
         this.setFrame(this.currentWeapon.spriteIndex)
-        this.weaponIcon.setFrame(this.currentWeapon.spriteIndex)
+        this.weaponIcon.setFrame(this.currentWeapon.iconIndex)
     }
     reload(){
-        if(this.ammo[this.currentWeapon.ammoType] === 0 || this.state === "reload" ||
-        this.currentWeapon.holder1 === this.currentWeapon.holderQuantity) return
+        if(this.currentWeapon.type === "grenade" || this.ammo[this.currentWeapon.ammoType] === 0
+            || this.state === "reload"
+            || this.currentWeapon.holder1 === this.currentWeapon.holderQuantity) return
 
         this.state = "reload"
         this.canShoot = false
@@ -229,8 +235,13 @@ export class Player extends Physics.Matter.Sprite{
         })
     }
     getAmmoUIText() : string{
-        let holder2Text = this.currentWeapon.double ? "-" + this.currentWeapon.holder2 : ""
-        return this.currentWeapon.holder1 + holder2Text + "/" + this.ammo[this.currentWeapon.ammoType]
+        if(this.currentWeapon.type === "weapon"){
+            let holder2Text = this.currentWeapon.double ? "-" + this.currentWeapon.holder2 : ""
+            return this.currentWeapon.holder1 + holder2Text + "/" + this.ammo[this.currentWeapon.ammoType]
+        }
+        if(this.currentWeapon.type === "grenade"){
+            return this.ammo[this.currentWeapon.ammoType]
+        }
     }
     shoot(weaponIndex = 1){
         // no ammo
@@ -282,7 +293,51 @@ export class Player extends Physics.Matter.Sprite{
             },
         })
     }
-    applyMuzzleEffect(muzzleX : number, muzzleY : number, weaponIndex : number){
+    throwGrenade(grenadeLabel : string){
+        // no grenade
+        if(this.ammo[this.currentWeapon.ammoType] === 0){
+            l("no grenade")
+            return
+        }
+
+        // update state and ui
+        this.canShoot = false
+        this.ammo[this.currentWeapon.ammoType]--
+        this.weaponAmmoUIText.setText(this.getAmmoUIText())
+
+        let startX = this.currentWeapon["offsetX"] * Math.cos(this.rotation) - this.currentWeapon["offsetY"] * Math.sin(this.rotation),
+            startY = this.currentWeapon["offsetX"] * Math.sin(this.rotation) + this.currentWeapon["offsetY"] * Math.cos(this.rotation)
+
+        let grenade = this.grenades.find(grenade => !grenade.active && grenade.name === grenadeLabel)
+        if (grenade)
+        {
+            grenade.fire(
+                this.x + startX,
+                this.y + startY,
+                this.rotation,
+                this.currentWeapon.explosionDelay,
+                this.currentWeapon.throwSpeed
+            );
+        } else {
+            this.grenades.push(new Grenade({
+                scene:this.scene,
+                x:this.x + startX,
+                y:this.y + startY,
+                label:this.currentWeapon.label,
+                rotation:this.rotation,
+                explosionDelay:this.currentWeapon.explosionDelay,
+                speed:this.currentWeapon.throwSpeed
+            }))
+        }
+
+        this.scene.time.addEvent({
+            delay:this.currentWeapon.throwDelay,
+            callback:()=>{
+                this.canShoot = true
+            },
+        })
+    }
+    applyMuzzleEffect(muzzleX : number, muzzleY : number){
         this.muzzleFire.setPosition(this.x + muzzleX,this.y + muzzleY)
         this.muzzleFire.rotation = this.rotation
         this.muzzleFire.setVisible(true)
@@ -305,7 +360,12 @@ export class Player extends Physics.Matter.Sprite{
 
         // firing
         if(this.scene.input.activePointer.isDown && this.canShoot) {
-            this.shoot()
+            if(this.currentWeapon.type === "weapon"){
+                this.shoot()
+            }
+            if(this.currentWeapon.type === "grenade"){
+                this.throwGrenade(this.currentWeapon.label)
+            }
         }
     }
 }

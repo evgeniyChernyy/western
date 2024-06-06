@@ -12,6 +12,7 @@ let weapons = [
         bulletSpeed:25,
         reloadTime:3000,
         spriteIndex:0,
+        iconIndex:0,
         ammoType:".44",
         holderQuantity:6,
         holder1:6,
@@ -33,6 +34,7 @@ let weapons = [
         bulletSpeed:25,
         reloadTime:7000,
         spriteIndex:1,
+        iconIndex:1,
         ammoType:".44",
         holderQuantity:6,
         holder1:6,
@@ -52,13 +54,29 @@ let weapons = [
         bulletSpeed:40,
         reloadTime:4000,
         spriteIndex:2,
+        iconIndex:2,
         ammoType:".44",
         holderQuantity:12,
         holder1:12,
+    },
+    {
+        type:"grenade",
+        label:"dynamite",
+        name:"Dynamite",
+        twoHanded: true,
+        throwDelay:1000,
+        offsetX:50,
+        offsetY:10,
+        throwSpeed:10,
+        explosionDelay:3000,
+        spriteIndex: 12,
+        iconIndex: 3,
+        ammoType: "dynamite",
     }
 ],
     ammo = {
     ".44":80,
+    dynamite:5
     }
 
 export {weapons,ammo}
