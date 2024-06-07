@@ -26,7 +26,10 @@ const config: Types.Core.GameConfig = {
         default: 'matter',
         matter: {
             gravity: { y: 0 },
-            debug: true
+            debug: {
+                showVelocity: true,
+                velocityColor: 0x00aeef,
+            }
         }
     },
     scale:{

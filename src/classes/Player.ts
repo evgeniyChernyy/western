@@ -41,11 +41,17 @@ export class Player extends Physics.Matter.Sprite{
         this.weapons = weapons
         this.currentWeapon = this.weapons[0]
 
+        // foot
+        this.feet = this.scene.add.sprite(this.x,this.y,"feet")
+            .setScale(.35,.35).setDepth(PLAYER_DEPTH - 1).setFrame(6)
+
         // muzzle fire and aim
         this.muzzleFire = config.scene.add.image(0,0,"muzzle_fire").setVisible(false).setScale(.4,.4).setOrigin(0,.5)
         this.aim = config.scene.add.image(this.x + 100,this.y,"aim_cursor").setScale(.75,.75).setDepth(UI_DEPTH)
 
         config.scene.add.existing(this)
+
+        // this.setAlpha(0.3)
 
         this.createWeaponUI(config)
         this.createAnimations()
@@ -156,6 +162,12 @@ export class Player extends Physics.Matter.Sprite{
             if (this.controlKeys['down'].isUp && this.controlKeys['up'].isUp) { this.setVelocityY(0); }
             if (this.controlKeys['left'].isUp && this.controlKeys['right'].isUp) { this.setVelocityX(0); }
             if (this.controlKeys['right'].isUp && this.controlKeys['left'].isUp) { this.setVelocityX(0); }
+
+            let playerVelocity = this.getVelocity()
+            if(playerVelocity.x === 0 && playerVelocity.y === 0){
+                this.feet.stop()
+                this.feet.setFrame(6)
+            }
         });
 
         // Move reticle upon locked pointer move
@@ -370,6 +382,40 @@ export class Player extends Physics.Matter.Sprite{
             this.aim.x,
             this.aim.y
         )
+
+        // feet and rotation
+        this.feet.x = this.x
+        this.feet.y = this.y
+        this.feet.rotation = this.rotation
+
+        // straight and side walk
+        let playerVelocity = this.getVelocity()
+        if( (playerVelocity.x !== 0 || playerVelocity.y !== 0)){
+            let velocityAngle = Phaser.Math.Angle.Between(this.x,this.y,this.x + playerVelocity.x,this.y + playerVelocity.y),
+                playerFaceToAngle = this.rotation,
+                faceMovementAngleDiffDegrees = Phaser.Math.RadToDeg(velocityAngle - playerFaceToAngle)
+            // straight anim
+            if( (faceMovementAngleDiffDegrees <= 45 && faceMovementAngleDiffDegrees >= -45)
+            || (faceMovementAngleDiffDegrees <= -135 && faceMovementAngleDiffDegrees >= -225)
+            || faceMovementAngleDiffDegrees >= 135
+            ){
+                if(!this.feet.anims.isPlaying){
+                    this.feet.play("walk")
+                }
+            }
+            // aside anim
+            else {
+                if(!this.feet.anims.isPlaying){
+                    this.feet.play("walk_aside")
+                }
+            }
+        } else {
+            if(this.feet.anims.isPlaying){
+                this.feet.stop()
+            }
+        }
+
+
 
         // firing
         if(this.scene.input.activePointer.isDown && this.canShoot) {

@@ -35,6 +35,8 @@ export class Preloader extends Scene
         this.load.image('palm', 'palm.png');
         this.load.image('palm_shadow', 'palm_shadow.png');
         this.load.spritesheet("player","player_sprites2.png",{frameWidth:205,frameHeight:134})
+        this.load.spritesheet("feet","feet.png",{frameWidth:204,frameHeight:124})
+        this.load.spritesheet("feet_aside","feet_aside1.png",{frameWidth:157,frameHeight:176})
         this.load.spritesheet("weapons_icons","weapons_icons.png",{frameWidth:200,frameHeight:207})
         this.load.spritesheet("explosion","explosion.png",{frameWidth:111,frameHeight:109})
     }

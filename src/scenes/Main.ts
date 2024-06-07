@@ -69,6 +69,18 @@ export class Main extends Scene
             frames: this.anims.generateFrameNumbers('explosion'),
             frameRate: 14,
         })
+        this.anims.create({
+            key: 'walk',
+            frames: this.anims.generateFrameNumbers('feet'),
+            frameRate: 8,
+            repeat:-1,
+        })
+        this.anims.create({
+            key: 'walk_aside',
+            frames: this.anims.generateFrameNumbers('feet_aside'),
+            frameRate: 8,
+            repeat:-1,
+        })
     }
     addTrees(){
         this.treesLayer.objects.forEach((object) => {
