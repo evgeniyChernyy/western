@@ -51,7 +51,7 @@ export class Player extends Physics.Matter.Sprite{
         this.currentWeapon = this.weapons[0]
 
         // foot
-        this.feet = this.scene.add.sprite(this.x,this.y,"feet")
+        this.feet = config.scene.add.sprite(this.x,this.y,"feet")
             .setScale(.35,.35).setDepth(PLAYER_DEPTH - 1).setFrame(6)
 
         // muzzle fire and aim
@@ -171,7 +171,6 @@ export class Player extends Physics.Matter.Sprite{
 
             this.updateSpeed()
             if (this.controlKeys['reload'].isDown && this.state !== "reload") { this.reload() }
-
 
             // change weapon
             if("12345".includes(event.key) && this.state !== "reload"){
@@ -301,7 +300,6 @@ export class Player extends Physics.Matter.Sprite{
     shoot(weaponIndex = 1){
         // no ammo
         if(this.currentWeapon["holder" + weaponIndex] === 0){
-            l("no ammo")
             return
         }
 
@@ -352,7 +350,6 @@ export class Player extends Physics.Matter.Sprite{
     throwGrenade(){
         // no grenade
         if(this.ammo[this.currentWeapon.ammoType] === 0){
-            l("no grenade")
             return
         }
 
@@ -463,8 +460,6 @@ export class Player extends Physics.Matter.Sprite{
                 this.feet.stop()
             }
         }
-
-
 
         // firing
         if(this.scene.input.activePointer.isDown && this.canShoot) {
