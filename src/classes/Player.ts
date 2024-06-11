@@ -1,5 +1,6 @@
 import { Physics, GameObjects, Input } from 'phaser';
-import {PLAYER_DEPTH, PLAYER_SPEED, UI_COLOR_DARK_RED_CSS, UI_COLOR_RED_CSS, UI_DEPTH} from "../constants"
+import {PLAYER_DEPTH, PLAYER_SPEED_WALK, PLAYER_SPEED_RUN, UI_COLOR_RED_CSS, UI_DEPTH,
+    UI_COLOR_RED,UI_MARGIN,STAMINA_SPENDING,STAMINA_RECOVERY} from "../constants"
 import {Bullet} from "../classes/Bullet";
 import {Grenade} from "../classes/Grenade";
 import {weapons,ammo} from "../data/weapons"
@@ -7,9 +8,13 @@ import {weapons,ammo} from "../data/weapons"
 export class Player extends Physics.Matter.Sprite{
 
     state : string
+    stamina : number
+    speed : number
 
     muzzleFire : GameObjects.Image
     aim : GameObjects.Image
+
+    statsGraphics : GameObjects.Graphics
 
     bullets : Array<Bullet>
     grenades : Array<Grenade>
@@ -22,6 +27,8 @@ export class Player extends Physics.Matter.Sprite{
     weaponAmmoUIText : GameObjects.Text
     weaponNameUIText : GameObjects.Text
 
+    feet : GameObjects.Sprite
+
     constructor(config) {
         super(config.scene.matter.world,config.x,config.y,"player",0,{
             shape:{ type: 'circle', radius:65 },
@@ -33,6 +40,8 @@ export class Player extends Physics.Matter.Sprite{
 
         // config, inventory, state
         this.state = "idle"
+        this.stamina = 100
+        this.speed = PLAYER_SPEED_WALK
         this.bullets = []
         this.grenades = []
         this.canShoot = true
@@ -51,8 +60,7 @@ export class Player extends Physics.Matter.Sprite{
 
         config.scene.add.existing(this)
 
-        // this.setAlpha(0.3)
-
+        this.statsGraphics = config.scene.add.graphics().setScrollFactor(0).setDepth(UI_DEPTH)
         this.createWeaponUI(config)
         this.createAnimations()
         this.initControls(config.scene)
@@ -60,7 +68,7 @@ export class Player extends Physics.Matter.Sprite{
     }
     createWeaponUI(config : object){
         this.weaponIcon = config.scene.add.sprite(
-            config.scene.game.config.canvas.width - 20,
+            config.scene.game.config.canvas.width - UI_MARGIN,
             config.scene.game.config.canvas.height - 60,
             "weapons_icons",
             this.currentWeapon.iconIndex
@@ -68,7 +76,7 @@ export class Player extends Physics.Matter.Sprite{
 
         this.weaponAmmoUIText = config.scene.add.text(
             this.weaponIcon.getBottomCenter().x,
-            config.scene.game.config.canvas.height - 40,
+            config.scene.game.config.canvas.height - UI_MARGIN * 2,
             this.getAmmoUIText(),
             {fontSize:28,color:UI_COLOR_RED_CSS,fontFamily:"Arial, sans-serif"}
         ).setOrigin(.5,1).setScrollFactor(0).setDepth(UI_DEPTH)
@@ -79,6 +87,16 @@ export class Player extends Physics.Matter.Sprite{
             this.currentWeapon.name,
             {fontSize:24,color:UI_COLOR_RED_CSS,fontFamily:"Arial, sans-serif"}
         ).setOrigin(1,1).setScrollFactor(0).setDepth(UI_DEPTH)
+    }
+    updateStatsUI(){
+        this.statsGraphics.clear()
+        this.statsGraphics.fillStyle(UI_COLOR_RED, 1)
+        this.statsGraphics.fillRect(
+            UI_MARGIN,
+            this.scene.game.config.canvas.height - UI_MARGIN * 2,
+            Math.ceil(200 * (this.stamina / 100)),
+            20
+        )
     }
     createAnimations(){
         this.anims.create({
@@ -141,16 +159,20 @@ export class Player extends Physics.Matter.Sprite{
             down: Phaser.Input.Keyboard.KeyCodes.S,
             left: Phaser.Input.Keyboard.KeyCodes.A,
             right: Phaser.Input.Keyboard.KeyCodes.D,
-            reload:Phaser.Input.Keyboard.KeyCodes.R
+            reload:Phaser.Input.Keyboard.KeyCodes.R,
+            shift:Phaser.Input.Keyboard.KeyCodes.SHIFT
         })
 
         // Enables movement of player with WASD keys
         scene.input.keyboard.on('keydown', event => {
-            if (this.controlKeys['up'].isDown && !this.controlKeys['down'].isDown) { this.setVelocityY(-PLAYER_SPEED); }
-            if (this.controlKeys['down'].isDown && !this.controlKeys['up'].isDown) { this.setVelocityY(PLAYER_SPEED); }
-            if (this.controlKeys['left'].isDown && !this.controlKeys['right'].isDown) { this.setVelocityX(-PLAYER_SPEED); }
-            if (this.controlKeys['right'].isDown && !this.controlKeys['left'].isDown) { this.setVelocityX(PLAYER_SPEED); }
+            // run
+            if(event.key === "Shift"){
+                this.speed = PLAYER_SPEED_RUN
+            }
+
+            this.updateSpeed()
             if (this.controlKeys['reload'].isDown && this.state !== "reload") { this.reload() }
+
 
             // change weapon
             if("12345".includes(event.key) && this.state !== "reload"){
@@ -158,6 +180,13 @@ export class Player extends Physics.Matter.Sprite{
             }
         });
         scene.input.keyboard.on('keyup', event => {
+            // run
+            if(event.key === "Shift"){
+                this.speed = PLAYER_SPEED_WALK
+
+                this.updateSpeed()
+            }
+
             if (this.controlKeys['up'].isUp && this.controlKeys['down'].isUp) { this.setVelocityY(0); }
             if (this.controlKeys['down'].isUp && this.controlKeys['up'].isUp) { this.setVelocityY(0); }
             if (this.controlKeys['left'].isUp && this.controlKeys['right'].isUp) { this.setVelocityX(0); }
@@ -178,6 +207,12 @@ export class Player extends Physics.Matter.Sprite{
                 this.aim.y += pointer.movementY;
             }
         });
+    }
+    updateSpeed(){
+        if (this.controlKeys['up'].isDown && !this.controlKeys['down'].isDown) { this.setVelocityY(-this.speed); }
+        if (this.controlKeys['down'].isDown && !this.controlKeys['up'].isDown) { this.setVelocityY(this.speed); }
+        if (this.controlKeys['left'].isDown && !this.controlKeys['right'].isDown) { this.setVelocityX(-this.speed); }
+        if (this.controlKeys['right'].isDown && !this.controlKeys['left'].isDown) { this.setVelocityX(this.speed); }
     }
     initWeaponsSelect(){
         this.scene.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) =>
@@ -375,6 +410,21 @@ export class Player extends Physics.Matter.Sprite{
         })
     }
     update(){
+        if(this.controlKeys.shift.isDown){
+            if(this.stamina > 0){
+                this.stamina -= STAMINA_SPENDING
+            } else {
+                this.stamina = 0
+
+                this.speed = PLAYER_SPEED_WALK
+
+                this.updateSpeed()
+            }
+        } else if(this.stamina < 100) {
+            this.stamina += STAMINA_RECOVERY
+        }
+        this.updateStatsUI()
+
         // rotation
         this.rotation = Phaser.Math.Angle.Between(
             this.x,
