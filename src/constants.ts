@@ -11,4 +11,5 @@ export const STAMINA_RECOVERY = .25
 export const UI_MARGIN = 20
 export const UI_COLOR_RED_CSS = "#ab1e23"
 export const UI_COLOR_RED = "0xAB1E23"
+export const UI_COLOR_SILVER = "0xbababa"
 export const UI_DEPTH = 200

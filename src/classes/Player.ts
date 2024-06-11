@@ -1,6 +1,6 @@
 import { Physics, GameObjects, Input } from 'phaser';
 import {PLAYER_DEPTH, PLAYER_SPEED_WALK, PLAYER_SPEED_RUN, UI_COLOR_RED_CSS, UI_DEPTH,
-    UI_COLOR_RED,UI_MARGIN,STAMINA_SPENDING,STAMINA_RECOVERY} from "../constants"
+    UI_COLOR_RED,UI_COLOR_SILVER,UI_MARGIN,STAMINA_SPENDING,STAMINA_RECOVERY} from "../constants"
 import {Bullet} from "../classes/Bullet";
 import {Grenade} from "../classes/Grenade";
 import {weapons,ammo} from "../data/weapons"
@@ -14,7 +14,7 @@ export class Player extends Physics.Matter.Sprite{
     muzzleFire : GameObjects.Image
     aim : GameObjects.Image
 
-    statsGraphics : GameObjects.Graphics
+    staminaBar : GameObjects.Rectangle
 
     bullets : Array<Bullet>
     grenades : Array<Grenade>
@@ -60,7 +60,13 @@ export class Player extends Physics.Matter.Sprite{
 
         config.scene.add.existing(this)
 
-        this.statsGraphics = config.scene.add.graphics().setScrollFactor(0).setDepth(UI_DEPTH)
+        this.staminaBar = config.scene.add.rectangle(
+            UI_MARGIN,
+            this.scene.game.config.canvas.height - UI_MARGIN * 2,
+            Math.ceil(200 * (this.stamina / 100)),
+            20,
+            UI_COLOR_SILVER
+        ).setScrollFactor(0).setDepth(UI_DEPTH).setOrigin(0,0)
         this.createWeaponUI(config)
         this.createAnimations()
         this.initControls(config.scene)
@@ -89,14 +95,7 @@ export class Player extends Physics.Matter.Sprite{
         ).setOrigin(1,1).setScrollFactor(0).setDepth(UI_DEPTH)
     }
     updateStatsUI(){
-        this.statsGraphics.clear()
-        this.statsGraphics.fillStyle(UI_COLOR_RED, 1)
-        this.statsGraphics.fillRect(
-            UI_MARGIN,
-            this.scene.game.config.canvas.height - UI_MARGIN * 2,
-            Math.ceil(200 * (this.stamina / 100)),
-            20
-        )
+        this.staminaBar.width = Math.ceil(200 * (this.stamina / 100))
     }
     createAnimations(){
         this.anims.create({
