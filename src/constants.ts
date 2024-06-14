@@ -2,10 +2,16 @@ export const BASIC_GAME_WIDTH = 1472
 
 // player
 export const PLAYER_DEPTH = 100
-export const PLAYER_SPEED_WALK = 2.5
-export const PLAYER_SPEED_RUN = 4
+export const HUMAN_SPEED_WALK = 2.5
+export const HUMAN_SPEED_RUN = 4
 export const STAMINA_SPENDING = .5
 export const STAMINA_RECOVERY = .25
+
+// AI
+export const IDLE_DURATION = 5000
+
+// GAME
+export const GO_TO_COMPLETE_DISTANCE = 5
 
 // UI
 export const UI_MARGIN = 20

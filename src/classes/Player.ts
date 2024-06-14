@@ -1,5 +1,5 @@
 import { Physics, GameObjects, Input } from 'phaser';
-import {PLAYER_DEPTH, PLAYER_SPEED_WALK, PLAYER_SPEED_RUN, UI_COLOR_RED_CSS, UI_DEPTH,
+import {PLAYER_DEPTH, HUMAN_SPEED_WALK, HUMAN_SPEED_RUN, UI_COLOR_RED_CSS, UI_DEPTH,
     UI_COLOR_RED,UI_COLOR_SILVER,UI_MARGIN,STAMINA_SPENDING,STAMINA_RECOVERY} from "../constants"
 import {Bullet} from "../classes/Bullet";
 import {Grenade} from "../classes/Grenade";
@@ -33,7 +33,7 @@ export class Player extends Physics.Matter.Sprite{
         super(config.scene.matter.world,config.x,config.y,"player",0,{
             shape:{ type: 'circle', radius:65 },
             render: { sprite: { xOffset: -0.15 } },
-            frictionAir:0
+            frictionAir:0,
         })
 
         this.setScale(.5,.5).setDepth(PLAYER_DEPTH)
@@ -41,7 +41,7 @@ export class Player extends Physics.Matter.Sprite{
         // config, inventory, state
         this.state = "idle"
         this.stamina = 100
-        this.speed = PLAYER_SPEED_WALK
+        this.speed = HUMAN_SPEED_WALK
         this.bullets = []
         this.grenades = []
         this.canShoot = true
@@ -166,7 +166,7 @@ export class Player extends Physics.Matter.Sprite{
         scene.input.keyboard.on('keydown', event => {
             // run
             if(event.key === "Shift"){
-                this.speed = PLAYER_SPEED_RUN
+                this.speed = HUMAN_SPEED_RUN
             }
 
             this.updateSpeed()
@@ -180,7 +180,7 @@ export class Player extends Physics.Matter.Sprite{
         scene.input.keyboard.on('keyup', event => {
             // run
             if(event.key === "Shift"){
-                this.speed = PLAYER_SPEED_WALK
+                this.speed = HUMAN_SPEED_WALK
 
                 this.updateSpeed()
             }
@@ -412,7 +412,7 @@ export class Player extends Physics.Matter.Sprite{
             } else {
                 this.stamina = 0
 
-                this.speed = PLAYER_SPEED_WALK
+                this.speed = HUMAN_SPEED_WALK
 
                 this.updateSpeed()
             }

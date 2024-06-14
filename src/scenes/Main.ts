@@ -1,6 +1,7 @@
 import { Scene, GameObjects, Tilemaps } from 'phaser';
 import {PLAYER_DEPTH} from "../constants";
 import {Player} from "../classes/Player";
+import {AI} from "../classes/AI";
 
 export class Main extends Scene
 {
@@ -8,6 +9,8 @@ export class Main extends Scene
     grass : GameObjects.TileSprite
     treesLayer : Tilemaps.ObjectLayer
     charactersLayer : Tilemaps.ObjectLayer
+
+    npcs : Array<AI>
     player : GameObjects.Image
 
     bulletsGroup : number
@@ -42,6 +45,7 @@ export class Main extends Scene
 
        // player and cursor pointer lock
         this.charactersLayer = this.map.getObjectLayer("characters")
+        this.npcs = []
         this.addCharacters()
         this.game.canvas.addEventListener('mousedown', () => {
             this.game.input.mouse.requestPointerLock();
@@ -56,8 +60,8 @@ export class Main extends Scene
         this.bulletsGroup = this.matter.world.nextGroup(true)
         this.matter.world.on('collisionstart', (event, bodyA, bodyB) =>
         {
-            if(bodyA.isStatic && bodyB.label === "bullet" ||
-                bodyB.isStatic && bodyA.label === "bullet"){
+            if(bodyA.category === "obstacle" && bodyB.label === "bullet" ||
+                bodyB.category === "obstacle" && bodyA.label === "bullet"){
                 bodyA.gameObject?.deactivate?.()
                 bodyB.gameObject?.deactivate?.()
             }
@@ -81,6 +85,19 @@ export class Main extends Scene
             frameRate: 8,
             repeat:-1,
         })
+
+        // ai bandit with pistol
+        this.anims.create({
+            key: 'singlePistolReloadTransition_bandit',
+            frames: this.anims.generateFrameNumbers('bandit', { frames: [ 3 ] }),
+            frameRate: 8,
+        })
+        this.anims.create({
+            key: 'singlePistolReload_bandit',
+            frames: this.anims.generateFrameNumbers('bandit', { frames: [ 6, 7 ] }),
+            frameRate: 4,
+            repeat:-1
+        })
     }
     addTrees(){
         this.treesLayer.objects.forEach((object) => {
@@ -93,7 +110,8 @@ export class Main extends Scene
                         radius: 20
                     },
                     isStatic:true,
-                    label:"tree"
+                    label:"tree",
+                    category:"obstacle"
                 }).setDepth(PLAYER_DEPTH + 1).setScale(1.4,1.4)
 
                 if(Phaser.Math.Between(0,1)){
@@ -120,6 +138,14 @@ export class Main extends Scene
                     scene:this
                 })
             }
+            if (object.name === "bandit") {
+                this.npcs.push(new AI({
+                    x:object.x,
+                    y:object.y,
+                    scene:this,
+                    data:object.properties
+                }))
+            }
         })
     }
     update(time,delta){
@@ -127,5 +153,7 @@ export class Main extends Scene
         this.grass.tilePositionY = this.cameras.main.scrollY
 
         this.player.update()
+
+        this.npcs.forEach((npc) => npc.update() )
     }
 }

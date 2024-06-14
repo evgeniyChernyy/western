@@ -77,6 +77,29 @@
                  "width":0,
                  "x":168,
                  "y":674
+                }, 
+                {
+                 "class":"",
+                 "height":0,
+                 "id":11,
+                 "name":"bandit",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"patrolX",
+                         "type":"int",
+                         "value":-400
+                        }, 
+                        {
+                         "name":"patrolY",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "visible":true,
+                 "width":0,
+                 "x":1558,
+                 "y":640
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -116,7 +139,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":11,
+ "nextobjectid":13,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.9.2",
