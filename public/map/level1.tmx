@@ -23,7 +23,7 @@
   </object>
   <object id="11" name="bandit" x="1558" y="640">
    <properties>
-    <property name="patrolX" type="int" value="-100"/>
+    <property name="patrolX" type="int" value="-400"/>
     <property name="patrolY" type="int" value="0"/>
    </properties>
    <point/>

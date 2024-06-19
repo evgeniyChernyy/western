@@ -1,4 +1,4 @@
-import { Physics, GameObjects } from 'phaser';
+import { Physics, GameObjects, Tweens } from 'phaser';
 import {PLAYER_DEPTH, HUMAN_SPEED_WALK, IDLE_DURATION, GO_TO_COMPLETE_DISTANCE} from "../constants";
 import {weapons} from "../data/weapons"
 import {Bullet} from "./Bullet";
@@ -18,6 +18,7 @@ export class AI extends Physics.Matter.Sprite{
     ammo : object
     currentWeapon : object
 
+    rotationTween : Tweens.Tween
     globalTasks : Array<Object>
     currentGlobalTask : Object | null
     currentGlobalTaskIndex : number | null
@@ -236,40 +237,55 @@ export class AI extends Physics.Matter.Sprite{
 
         return { x: speed * Math.sin(direction), y: speed * Math.cos(direction) };
     }
+    handleLocalTask(){
+        if(this.currentLocalTask.name === "goTo"){
+            if(this.currentLocalTask.state === "stopped"){
+                this.currentLocalTask.state = "inProgress"
+                this.feet.play("walk")
+
+                let velocityToTarget = this.velocityToTarget(this,this.currentLocalTask.target,HUMAN_SPEED_WALK),
+                    rotation = Phaser.Math.Angle.Between(
+                        this.x,
+                        this.y,
+                        this.currentLocalTask.target.x,
+                        this.currentLocalTask.target.y
+                    )
+
+                this.rotationTween = this.scene.tweens.add({
+                    targets:this,
+                    rotation,
+                    duration:300
+                })
+
+                this.setVelocity(velocityToTarget.x,velocityToTarget.y)
+            }
+
+            if(this.currentLocalTask.state === "inProgress"){
+                if(Phaser.Math.Distance.BetweenPoints(this,this.currentLocalTask.target) <= GO_TO_COMPLETE_DISTANCE){
+                    this.setVelocity(0,0)
+                    this.feet.stop()
+
+                    this.startNextLocalTask()
+                }
+            }
+        }
+
+        if(this.currentLocalTask.name === "idle"){
+            if(this.currentLocalTask.state === "stopped"){
+                this.currentLocalTask.state = "inProgress"
+
+                this.scene.time.addEvent({
+                    delay:this.currentLocalTask.duration,
+                    callback:()=>{
+                        this.startNextLocalTask()
+                    },
+                })
+            }
+        }
+    }
     update(){
         if(this.currentLocalTask){
-            if(this.currentLocalTask.name === "goTo"){
-                if(this.currentLocalTask.state === "stopped"){
-                    this.currentLocalTask.state = "inProgress"
-                    this.feet.play("walk")
-
-                    let velocityToTarget = this.velocityToTarget(this,this.currentLocalTask.target,HUMAN_SPEED_WALK)
-
-                    this.setVelocity(velocityToTarget.x,velocityToTarget.y)
-                }
-
-                if(this.currentLocalTask.state === "inProgress"){
-                    if(Phaser.Math.Distance.BetweenPoints(this,this.currentLocalTask.target) <= GO_TO_COMPLETE_DISTANCE){
-                        this.setVelocity(0,0)
-                        this.feet.stop()
-
-                        this.startNextLocalTask()
-                    }
-                }
-            }
-
-            if(this.currentLocalTask.name === "idle"){
-                if(this.currentLocalTask.state === "stopped"){
-                    this.currentLocalTask.state = "inProgress"
-
-                    this.scene.time.addEvent({
-                        delay:this.currentLocalTask.duration,
-                        callback:()=>{
-                            this.startNextLocalTask()
-                        },
-                    })
-                }
-            }
+            this.handleLocalTask()
         }
 
         // feet and rotation
