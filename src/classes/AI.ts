@@ -1,34 +1,47 @@
-import { Physics, GameObjects, Tweens } from 'phaser';
-import {PLAYER_DEPTH, HUMAN_SPEED_WALK, IDLE_DURATION, GO_TO_COMPLETE_DISTANCE} from "../constants";
+import { Physics, GameObjects, Tweens, Time } from 'phaser';
+import {PLAYER_DEPTH, HUMAN_SPEED_WALK, IDLE_DURATION, GO_TO_COMPLETE_DISTANCE,
+    NPC_AGGRESSION_LEVEL,NPC_DETECTION_DISTANCE,NPC_BASIC_PLAYER_RELATION,
+    NPC_DETECTION_INTERVAL} from "../constants";
 import {weapons} from "../data/weapons"
 import {Bullet} from "./Bullet";
 
 export class AI extends Physics.Matter.Sprite{
 
+    // state and data
     name : string
     state : string
     stamina : number
     data : Array<Object>
     speed : number
+    playerDetected : boolean = false
+    playerRelation: number
+    detectionDistance: number
+    detectionInterval: number
 
+    // components
+    feet : GameObjects.Sprite
+
+    // shooting
     muzzleFire : GameObjects.Image
-
     bullets : Array<Bullet>
     canShoot : boolean
+    readyToShoot : boolean
     ammo : object
+    weapons : Array<Object>
     currentWeapon : object
 
+    // tasks, player detection and helpful
+    detectionEvent : Time.TimerEvent
     rotationTween : Tweens.Tween
+
+    patrolPoints : Array<Object>
     globalTasks : Array<Object>
     currentGlobalTask : Object | null
     currentGlobalTaskIndex : number | null
-    patrolPoints : Array<Object>
 
     localTasks : Array<Object>
     currentLocalTaskIndex : null | number
     currentLocalTask : null | Object
-
-    feet : GameObjects.Sprite
 
     constructor(config) {
         super(config.scene.matter.world, config.x, config.y, "bandit", 0, {
@@ -45,12 +58,17 @@ export class AI extends Physics.Matter.Sprite{
         this.stamina = 100
         this.data = config.data
         this.speed = HUMAN_SPEED_WALK
+        this.playerRelation = this.getDataByLabel("playerRelation") || NPC_BASIC_PLAYER_RELATION
+        this.detectionDistance = this.getDataByLabel("detectionDistance") || NPC_DETECTION_DISTANCE
+        this.detectionInterval = this.getDataByLabel("detectionInterval") || NPC_DETECTION_INTERVAL
         this.bullets = []
         this.canShoot = true
+        this.readyToShoot = false
         this.ammo = {
             ".44":80,
         }
-        this.currentWeapon = weapons[0]
+        this.weapons = JSON.parse(JSON.stringify(weapons))
+        this.currentWeapon = this.weapons[0]
 
         // technical data
         this.patrolPoints = []
@@ -73,6 +91,45 @@ export class AI extends Physics.Matter.Sprite{
 
         this.initAnimations()
         this.startNextGlobalTask()
+        this.initEvents()
+    }
+    initEvents(){
+        this.detectionEvent = this.scene.time.addEvent({
+            delay: this.detectionInterval,
+            callback:this.checkPlayerDetection,
+            callbackScope:this,
+            repeat: -1
+        })
+    }
+    checkPlayerDetection(){
+        if(Phaser.Math.Distance.BetweenPoints(this.scene.player,this) <= this.detectionDistance){
+            this.detectPlayer()
+        } else {
+            this.losePlayer()
+        }
+    }
+    detectPlayer(){
+        if(this.playerDetected) return
+
+        this.playerDetected = true
+
+        if(this.playerRelation <= NPC_AGGRESSION_LEVEL){
+            // add task to shoot
+            this.addAndStartGlobalTask({
+                name:"attack",
+                target:this.scene.player,
+                state:"inProgress",
+                canEnd:true
+            })
+        }
+    }
+    losePlayer(){
+        this.playerDetected = false
+
+        l("lost sight of player")
+    }
+    getDataByLabel(label : string) : undefined | number | string {
+        return this.data.find((el) => el.name === label )?.value
     }
     // task state - stopped paused inProgress canceled
     getGlobalTaskFromObject(){
@@ -81,12 +138,14 @@ export class AI extends Physics.Matter.Sprite{
 
             return [{
                 name:"patrol",
-                state:"stopped"
+                state:"stopped",
+                canEnd:false
             }]
         } else {
             return [{
                 name:"idle",
-                state:"stopped"
+                state:"stopped",
+                canEnd:false
             }]
         }
     }
@@ -118,7 +177,27 @@ export class AI extends Physics.Matter.Sprite{
             this.currentGlobalTaskIndex = 0
             this.currentGlobalTask = this.globalTasks[this.currentGlobalTaskIndex]
             this.currentGlobalTask.state = "inProgress"
+        } else {
+            this.currentGlobalTask.state = "stopped"
+
+            this.currentGlobalTaskIndex++
+
+            if(this.currentGlobalTaskIndex >= this.globalTasks.length){
+                this.currentGlobalTask = 0
+            }
+
+            this.currentGlobalTask = this.globalTasks[this.currentGlobalTaskIndex]
+            this.currentGlobalTask.state = "inProgress"
         }
+
+        this.generateLocalTasks()
+    }
+    addAndStartGlobalTask(task){
+        this.globalTasks.push(task)
+
+        this.currentGlobalTask.state = "stopped"
+        this.currentLocalTaskIndex = this.globalTasks.length - 1
+        this.currentGlobalTask = task
 
         this.generateLocalTasks()
     }
@@ -134,6 +213,8 @@ export class AI extends Physics.Matter.Sprite{
         this.currentLocalTask = this.localTasks[this.currentLocalTaskIndex]
     }
     generateLocalTasks(){
+        this.localTasks = []
+
         if(this.currentGlobalTask.name === "patrol"){
             this.localTasks.push({
                 name:"goTo",
@@ -152,13 +233,21 @@ export class AI extends Physics.Matter.Sprite{
                 duration:IDLE_DURATION,
                 state:"stopped"
             })
-
-            this.currentLocalTaskIndex = 0
-            this.currentLocalTask = this.localTasks[this.currentLocalTaskIndex]
         }
+
+        if(this.currentGlobalTask.name === "attack"){
+            this.localTasks.push({
+                name:"attack",
+                target:this.currentGlobalTask.target,
+                state:"stopped"
+            })
+        }
+
+        this.currentLocalTaskIndex = 0
+        this.currentLocalTask = this.localTasks[this.currentLocalTaskIndex]
     }
     reload(){
-        if(this.ammo[this.currentWeapon.ammoType] === 0 ) return
+        if(this.ammo[this.currentWeapon.ammoType] === 0 || this.state === "reload") return
 
         this.state = "reload"
         this.canShoot = false
@@ -181,7 +270,13 @@ export class AI extends Physics.Matter.Sprite{
             },
         })
     }
-    shoot(){
+    shoot(weaponIndex = 1){
+        // no ammo
+        if(this.currentWeapon["holder" + weaponIndex] === 0){
+            this.reload()
+            return
+        }
+
         // update state and ui
         this.canShoot = false
         this.currentWeapon["holder1"]--
@@ -237,19 +332,63 @@ export class AI extends Physics.Matter.Sprite{
 
         return { x: speed * Math.sin(direction), y: speed * Math.cos(direction) };
     }
+    getCorrectTweenRotationToTarget(target : GameObjects.GameObject) : number{
+        let angleBetween = Phaser.Math.Angle.Between(
+                this.x,
+                this.y,
+                target.x,
+                target.y
+            ),
+            diff = angleBetween - this.rotation
+
+        if(diff < -Math.PI){
+            diff += 2 * Math.PI
+        } else if (diff > Math.PI){
+            diff -= 2 * Math.PI
+        }
+
+        return this.rotation + diff
+    }
     handleLocalTask(){
+        if(this.currentLocalTask.name === "attack"){
+            if(this.currentLocalTask.state === "stopped"){
+                this.currentLocalTask.state = "inProgress"
+
+                this.setVelocity(0,0)
+
+                let rotation = this.getCorrectTweenRotationToTarget(this.currentLocalTask.target)
+
+                this.rotationTween = this.scene.tweens.add({
+                    targets:this,
+                    rotation,
+                    duration:300,
+                    onComplete:()=>{
+                        this.readyToShoot = true
+                    }
+                })
+            }
+
+            if(this.currentLocalTask.state === "inProgress"){
+                if(this.readyToShoot && this.canShoot){
+                    this.rotation = Phaser.Math.Angle.Between(
+                        this.x,
+                        this.y,
+                        this.currentLocalTask.target.x,
+                        this.currentLocalTask.target.y
+                    )
+
+                    this.shoot()
+                }
+            }
+        }
+
         if(this.currentLocalTask.name === "goTo"){
             if(this.currentLocalTask.state === "stopped"){
                 this.currentLocalTask.state = "inProgress"
                 this.feet.play("walk")
 
                 let velocityToTarget = this.velocityToTarget(this,this.currentLocalTask.target,HUMAN_SPEED_WALK),
-                    rotation = Phaser.Math.Angle.Between(
-                        this.x,
-                        this.y,
-                        this.currentLocalTask.target.x,
-                        this.currentLocalTask.target.y
-                    )
+                    rotation = this.getCorrectTweenRotationToTarget(this.currentLocalTask.target)
 
                 this.rotationTween = this.scene.tweens.add({
                     targets:this,

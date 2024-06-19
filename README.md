@@ -52,3 +52,8 @@ Evgeniy Chernyy, frontend developer from Moscow, Russia, please contact me via:
 [TG](https://t.me/evgeniy_chernyy)
 
 [ITCH](https://evgeniychernyy.itch.io/)
+
+
+### Game core documentation
+
+[AI](documentation/AI.md)

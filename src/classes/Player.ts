@@ -46,8 +46,8 @@ export class Player extends Physics.Matter.Sprite{
         this.grenades = []
         this.canShoot = true
 
-        this.ammo = ammo
-        this.weapons = weapons
+        this.ammo = Phaser.Utils.Objects.Clone(ammo)
+        this.weapons = JSON.parse(JSON.stringify(weapons))
         this.currentWeapon = this.weapons[0]
 
         // foot

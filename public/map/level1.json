@@ -94,6 +94,11 @@
                          "name":"patrolY",
                          "type":"int",
                          "value":0
+                        }, 
+                        {
+                         "name":"playerRelation",
+                         "type":"int",
+                         "value":20
                         }],
                  "rotation":0,
                  "visible":true,

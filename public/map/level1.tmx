@@ -25,6 +25,7 @@
    <properties>
     <property name="patrolX" type="int" value="-400"/>
     <property name="patrolY" type="int" value="0"/>
+    <property name="playerRelation" type="int" value="20"/>
    </properties>
    <point/>
   </object>
