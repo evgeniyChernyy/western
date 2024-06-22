@@ -4,6 +4,7 @@ import {PLAYER_DEPTH, HUMAN_SPEED_WALK, IDLE_DURATION, GO_TO_COMPLETE_DISTANCE,
     NPC_DETECTION_INTERVAL} from "../constants";
 import {weapons} from "../data/weapons"
 import {Bullet} from "./Bullet";
+import utils from "../utils";
 
 export class AI extends Physics.Matter.Sprite{
 
@@ -67,7 +68,7 @@ export class AI extends Physics.Matter.Sprite{
         this.ammo = {
             ".44":80,
         }
-        this.weapons = JSON.parse(JSON.stringify(weapons))
+        this.weapons = utils.deepCopy(weapons)
         this.currentWeapon = this.weapons[0]
 
         // technical data
