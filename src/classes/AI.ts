@@ -1,12 +1,14 @@
 import { Physics, GameObjects, Tweens, Time } from 'phaser';
 import {PLAYER_DEPTH, HUMAN_SPEED_WALK, IDLE_DURATION, GO_TO_COMPLETE_DISTANCE,
     NPC_AGGRESSION_LEVEL,NPC_DETECTION_DISTANCE,NPC_BASIC_PLAYER_RELATION,
-    NPC_DETECTION_INTERVAL} from "../constants";
+    NPC_DETECTION_INTERVAL,NPC_HIT_RELATION_DECREASE} from "../constants";
 import {weapons} from "../data/weapons"
 import {Bullet} from "./Bullet";
 import utils from "../utils";
 
 export class AI extends Physics.Matter.Sprite{
+
+    category : string
 
     // state and data
     name : string
@@ -31,6 +33,9 @@ export class AI extends Physics.Matter.Sprite{
     weapons : Array<Object>
     currentWeapon : object
 
+    // world role and factions
+    factions : Array<string>
+
     // tasks, player detection and helpful
     detectionEvent : Time.TimerEvent
     rotationTween : Tweens.Tween
@@ -53,6 +58,9 @@ export class AI extends Physics.Matter.Sprite{
 
         this.setScale(.5,.5).setDepth(PLAYER_DEPTH)
 
+        // technical
+        this.category = "character"
+
         // config, inventory, state
         this.name = "bandit"
         this.state = "idle"
@@ -70,6 +78,8 @@ export class AI extends Physics.Matter.Sprite{
         }
         this.weapons = utils.deepCopy(weapons)
         this.currentWeapon = this.weapons[0]
+
+        this.factions = ["bastards"]
 
         // technical data
         this.patrolPoints = []
@@ -134,7 +144,7 @@ export class AI extends Physics.Matter.Sprite{
     }
     // task state - stopped paused inProgress canceled
     getGlobalTaskFromObject(){
-        if(this.data.find((el) => { return el.name === 'patrolX' })){
+        if(this.data.find((el) => { return el.name.includes("patrol") })){
             this.getPatrolPoints()
 
             return [{
@@ -286,25 +296,22 @@ export class AI extends Physics.Matter.Sprite{
             muzzleY = this.currentWeapon["offsetX1"] * Math.sin(this.rotation) + this.currentWeapon["offsetY1"] * Math.cos(this.rotation)
         this.applyMuzzleEffect(muzzleX,muzzleY)
 
-        let bullet = this.bullets.find(bullet => !bullet.active)
-        if (bullet)
-        {
-            bullet.fire(
-                this.x + muzzleX,
-                this.y + muzzleY,
-                this.rotation,
-                this.currentWeapon.bulletLifespan,
-                this.currentWeapon.bulletSpeed
-            );
-        } else {
-            this.bullets.push(new Bullet({
+        let bullet = this.bullets.find(bullet => !bullet.active),
+            bulletConfig = {
+                owner:this,
+                damage:this.currentWeapon.damage,
                 scene:this.scene,
                 x:this.x + muzzleX,
                 y:this.y + muzzleY,
                 rotation:this.rotation,
                 lifespan:this.currentWeapon.bulletLifespan,
                 speed:this.currentWeapon.bulletSpeed
-            }))
+            }
+        if (bullet)
+        {
+            bullet.fire(bulletConfig);
+        } else {
+            this.bullets.push(new Bullet(bulletConfig))
         }
 
         this.scene.time.addEvent({
@@ -421,6 +428,23 @@ export class AI extends Physics.Matter.Sprite{
                     },
                 })
             }
+        }
+    }
+    hasCommonFactions(character : object) : boolean {
+        let hasCommonFactions = false
+        for(let i = 0; i < this.factions; i++){
+            if(character.factions.includes(this.factions[i])){
+                hasCommonFactions = true
+                break
+            }
+        }
+        return hasCommonFactions
+    }
+    getHitByBullet(bullet){
+        if(bullet.getData("owner") === this.scene.player && !this.hasCommonFactions(this.scene.player)){
+            this.playerRelation -= NPC_HIT_RELATION_DECREASE
+
+            this.detectPlayer()
         }
     }
     update(){

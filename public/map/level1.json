@@ -88,12 +88,12 @@
                         {
                          "name":"patrolX",
                          "type":"int",
-                         "value":-400
+                         "value":0
                         }, 
                         {
                          "name":"patrolY",
                          "type":"int",
-                         "value":0
+                         "value":400
                         }, 
                         {
                          "name":"playerRelation",
@@ -103,8 +103,26 @@
                  "rotation":0,
                  "visible":true,
                  "width":0,
-                 "x":1558,
-                 "y":640
+                 "x":1762,
+                 "y":356
+                }, 
+                {
+                 "class":"",
+                 "height":0,
+                 "id":13,
+                 "name":"bandit",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"playerRelation",
+                         "type":"int",
+                         "value":50
+                        }],
+                 "rotation":0,
+                 "visible":true,
+                 "width":0,
+                 "x":942,
+                 "y":654
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -144,7 +162,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":13,
+ "nextobjectid":14,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.9.2",

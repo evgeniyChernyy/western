@@ -16,6 +16,7 @@ let weapons = [
         ammoType:".44",
         holderQuantity:6,
         holder1:6,
+        damage:35,
     },
     {
         type:"weapon",
@@ -39,6 +40,7 @@ let weapons = [
         holderQuantity:6,
         holder1:6,
         holder2:6,
+        damage:35,
     },
     {
         type:"weapon",
@@ -58,6 +60,7 @@ let weapons = [
         ammoType:".44",
         holderQuantity:12,
         holder1:12,
+        damage: 60,
     },
     {
         type:"grenade",
@@ -72,6 +75,7 @@ let weapons = [
         spriteIndex: 12,
         iconIndex: 3,
         ammoType: "dynamite",
+        damage:200,
     }
 ],
     ammo = {

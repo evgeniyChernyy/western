@@ -10,6 +10,7 @@ export const STAMINA_RECOVERY = .25
 // AI and NPC
 export const IDLE_DURATION = 5000
 export const NPC_AGGRESSION_LEVEL = 20
+export const NPC_HIT_RELATION_DECREASE = 80
 export const NPC_DETECTION_DISTANCE = 400
 export const NPC_BASIC_PLAYER_RELATION = 40
 export const NPC_DETECTION_INTERVAL = 1000

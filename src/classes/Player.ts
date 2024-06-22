@@ -7,6 +7,8 @@ import {weapons,ammo} from "../data/weapons"
 
 export class Player extends Physics.Matter.Sprite{
 
+    category : string
+
     state : string
     stamina : number
     speed : number
@@ -27,6 +29,9 @@ export class Player extends Physics.Matter.Sprite{
     weaponAmmoUIText : GameObjects.Text
     weaponNameUIText : GameObjects.Text
 
+    // player world status and missions etc
+    factions : Array<string>
+
     feet : GameObjects.Sprite
 
     constructor(config) {
@@ -37,6 +42,9 @@ export class Player extends Physics.Matter.Sprite{
         })
 
         this.setScale(.5,.5).setDepth(PLAYER_DEPTH)
+
+        // technical
+        this.category = "character"
 
         // config, inventory, state
         this.state = "idle"
@@ -49,6 +57,9 @@ export class Player extends Physics.Matter.Sprite{
         this.ammo = Phaser.Utils.Objects.Clone(ammo)
         this.weapons = JSON.parse(JSON.stringify(weapons))
         this.currentWeapon = this.weapons[0]
+
+        // player world status and missions etc
+        this.factions = []
 
         // foot
         this.feet = config.scene.add.sprite(this.x,this.y,"feet")
@@ -314,25 +325,22 @@ export class Player extends Physics.Matter.Sprite{
             muzzleY = this.currentWeapon["offsetX" + weaponIndex] * Math.sin(this.rotation) + this.currentWeapon["offsetY" + weaponIndex] * Math.cos(this.rotation)
         this.applyMuzzleEffect(muzzleX,muzzleY,weaponIndex)
 
-        let bullet = this.bullets.find(bullet => !bullet.active)
-        if (bullet)
-        {
-            bullet.fire(
-                this.x + muzzleX,
-                this.y + muzzleY,
-                this.rotation,
-                this.currentWeapon.bulletLifespan,
-                this.currentWeapon.bulletSpeed
-            );
-        } else {
-            this.bullets.push(new Bullet({
+        let bullet = this.bullets.find(bullet => !bullet.active),
+            bulletConfig = {
+                owner:this,
+                damage:this.currentWeapon.damage,
                 scene:this.scene,
                 x:this.x + muzzleX,
                 y:this.y + muzzleY,
                 rotation:this.rotation,
                 lifespan:this.currentWeapon.bulletLifespan,
                 speed:this.currentWeapon.bulletSpeed
-            }))
+            }
+        if (bullet)
+        {
+            bullet.fire(bulletConfig);
+        } else {
+            this.bullets.push(new Bullet(bulletConfig))
         }
 
         let weapon = this.currentWeapon
@@ -404,6 +412,9 @@ export class Player extends Physics.Matter.Sprite{
                 this.muzzleFire.setVisible(false)
             },
         })
+    }
+    getHitByBullet(bullet){
+
     }
     update(){
         if(this.controlKeys.shift.isDown){

@@ -25,8 +25,10 @@ export class Main extends Scene
     }
     create ()
     {
+        // create map and bounds - walls are in obstacle category
         this.map = this.make.tilemap({ key: 'level1' })
         this.matter.world.setBounds(0,0,this.map.widthInPixels, this.map.heightInPixels)
+        Object.values(this.matter.world.walls).forEach((wall) => wall.category = 'obstacle' )
 
         this.grass = this.add.tileSprite(
             0,
@@ -64,6 +66,15 @@ export class Main extends Scene
                 bodyB.category === "obstacle" && bodyA.label === "bullet"){
                 bodyA.gameObject?.deactivate?.()
                 bodyB.gameObject?.deactivate?.()
+                return
+            }
+            if(bodyA.gameObject.category === "character" && bodyB.label === "bullet" ||
+                bodyB.gameObject.category === "character" && bodyA.label === "bullet"){
+                let character = bodyA.label === "bullet" ? bodyB.gameObject : bodyA.gameObject,
+                    bullet = bodyA.label === "bullet" ? bodyA.gameObject : bodyB.gameObject;
+
+                character.getHitByBullet(bullet)
+                bullet.deactivate()
             }
         });
     }

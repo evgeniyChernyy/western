@@ -7,31 +7,37 @@ export class Bullet extends Physics.Matter.Image{
     constructor(config) {
         super(config.scene.matter.world,config.x,config.y,"bulletLine",null,{
             frictionAir:0,
-            label:"bullet"
+            label:"bullet",
+            isSensor:true,
         })
 
         this.setRotation(config.rotation)
         this.setVelocity(config.speed * Math.cos(config.rotation),config.speed * Math.sin(config.rotation));
         this.setName("bullet")
         this.setCollisionGroup(this.scene.bulletsGroup)
+        this.setData("owner",config.owner)
+        this.setData("damage",config.damage)
 
         config.scene.add.existing(this)
 
         this.startLifespan(config.lifespan)
     }
-    fire(x,y,rotation,lifespan,speed){
+    fire(config){
+        this.setData("owner",config.owner)
+        this.setData("damage",config.damage)
+
         this.setAngularVelocity(0)
-        this.setPosition(x, y);
+        this.setPosition(config.x, config.y);
 
         // show bullet
         this.world.add(this.body);
         this.setActive(true);
         this.setVisible(true);
 
-        this.setRotation(rotation)
-        this.setVelocity(speed * Math.cos(rotation),speed * Math.sin(rotation));
+        this.setRotation(config.rotation)
+        this.setVelocity(config.speed * Math.cos(config.rotation),config.speed * Math.sin(config.rotation));
 
-        this.startLifespan(lifespan)
+        this.startLifespan(config.lifespan)
     }
     startLifespan(lifespan : number) : void{
         this.lifespanEvent = this.scene.time.addEvent({
