@@ -1,7 +1,7 @@
 import { Physics, GameObjects, Tweens, Time } from 'phaser';
 import {PLAYER_DEPTH, HUMAN_SPEED_WALK, IDLE_DURATION, GO_TO_COMPLETE_DISTANCE,
     NPC_AGGRESSION_LEVEL,NPC_DETECTION_DISTANCE,NPC_BASIC_PLAYER_RELATION,
-    NPC_DETECTION_INTERVAL,NPC_HIT_RELATION_DECREASE} from "../constants";
+    NPC_DETECTION_INTERVAL,NPC_HIT_RELATION_DECREASE,NPC_ATTACK_TARGET_RADIUS_POINT} from "../constants";
 import {weapons} from "../data/weapons"
 import {Bullet} from "./Bullet";
 import utils from "../utils";
@@ -29,6 +29,7 @@ export class AI extends Physics.Matter.Sprite{
     bullets : Array<Bullet>
     canShoot : boolean
     readyToShoot : boolean
+    isMoving : boolean
     ammo : object
     weapons : Array<Object>
     currentWeapon : object
@@ -73,6 +74,7 @@ export class AI extends Physics.Matter.Sprite{
         this.bullets = []
         this.canShoot = true
         this.readyToShoot = false
+        this.isMoving = false
         this.ammo = {
             ".44":80,
         }
@@ -250,6 +252,7 @@ export class AI extends Physics.Matter.Sprite{
             this.localTasks.push({
                 name:"attack",
                 target:this.currentGlobalTask.target,
+                moveTarget:null,
                 state:"stopped"
             })
         }
@@ -333,7 +336,7 @@ export class AI extends Physics.Matter.Sprite{
             },
         })
     }
-    velocityToTarget(from, to, speed = 1){
+    velocityToTarget(from, to, speed = 1) : object {
         let direction = Math.atan((to.x - from.x) / (to.y - from.y));
 
             speed = to.y >= from.y ? speed : -speed;
@@ -357,12 +360,27 @@ export class AI extends Physics.Matter.Sprite{
 
         return this.rotation + diff
     }
+    generateLocalAttackMoveTarget() : void{
+        let circle = new Phaser.Geom.Circle(
+            this.currentLocalTask.target.x,
+            this.currentLocalTask.target.y,
+            NPC_ATTACK_TARGET_RADIUS_POINT
+        )
+
+        this.currentLocalTask.moveTarget = circle.getRandomPoint()
+    }
+    moveTo(target) : void {
+        this.isMoving = true
+
+        let velocity = this.velocityToTarget(this,target,HUMAN_SPEED_WALK)
+
+        this.setVelocity(velocity.x,velocity.y)
+        this.feet.play("walk")
+    }
     handleLocalTask(){
         if(this.currentLocalTask.name === "attack"){
             if(this.currentLocalTask.state === "stopped"){
                 this.currentLocalTask.state = "inProgress"
-
-                this.setVelocity(0,0)
 
                 let rotation = this.getCorrectTweenRotationToTarget(this.currentLocalTask.target)
 
@@ -372,19 +390,30 @@ export class AI extends Physics.Matter.Sprite{
                     duration:300,
                     onComplete:()=>{
                         this.readyToShoot = true
+
+                        this.generateLocalAttackMoveTarget()
+                        this.moveTo(this.currentLocalTask.moveTarget)
                     }
                 })
             }
 
             if(this.currentLocalTask.state === "inProgress"){
-                if(this.readyToShoot && this.canShoot){
+                if(this.readyToShoot){
                     this.rotation = Phaser.Math.Angle.Between(
                         this.x,
                         this.y,
                         this.currentLocalTask.target.x,
                         this.currentLocalTask.target.y
                     )
+                }
 
+                if(this.isMoving && this.currentLocalTask.moveTarget &&
+                    Phaser.Math.Distance.BetweenPoints(this,this.currentLocalTask.moveTarget) <= GO_TO_COMPLETE_DISTANCE){
+                    this.generateLocalAttackMoveTarget()
+                    this.moveTo(this.currentLocalTask.moveTarget)
+                }
+
+                if(this.readyToShoot && this.canShoot){
                     this.shoot()
                 }
             }
@@ -393,10 +422,8 @@ export class AI extends Physics.Matter.Sprite{
         if(this.currentLocalTask.name === "goTo"){
             if(this.currentLocalTask.state === "stopped"){
                 this.currentLocalTask.state = "inProgress"
-                this.feet.play("walk")
 
-                let velocityToTarget = this.velocityToTarget(this,this.currentLocalTask.target,HUMAN_SPEED_WALK),
-                    rotation = this.getCorrectTweenRotationToTarget(this.currentLocalTask.target)
+                let rotation = this.getCorrectTweenRotationToTarget(this.currentLocalTask.target)
 
                 this.rotationTween = this.scene.tweens.add({
                     targets:this,
@@ -404,7 +431,7 @@ export class AI extends Physics.Matter.Sprite{
                     duration:300
                 })
 
-                this.setVelocity(velocityToTarget.x,velocityToTarget.y)
+                this.moveTo(this.currentLocalTask.target)
             }
 
             if(this.currentLocalTask.state === "inProgress"){
@@ -419,6 +446,8 @@ export class AI extends Physics.Matter.Sprite{
 
         if(this.currentLocalTask.name === "idle"){
             if(this.currentLocalTask.state === "stopped"){
+                this.isMoving = false
+
                 this.currentLocalTask.state = "inProgress"
 
                 this.scene.time.addEvent({
