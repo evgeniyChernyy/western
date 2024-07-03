@@ -1,7 +1,8 @@
 import { Physics, GameObjects, Tweens, Time } from 'phaser';
 import {PLAYER_DEPTH, HUMAN_SPEED_WALK, IDLE_DURATION, GO_TO_COMPLETE_DISTANCE,
     NPC_AGGRESSION_LEVEL,NPC_DETECTION_DISTANCE,NPC_BASIC_PLAYER_RELATION,
-    NPC_DETECTION_INTERVAL,NPC_HIT_RELATION_DECREASE,NPC_ATTACK_TARGET_RADIUS_POINT} from "../constants";
+    NPC_DETECTION_INTERVAL,NPC_HIT_RELATION_DECREASE,NPC_ATTACK_TARGET_RADIUS_POINT,
+    NPC_MOVING_DIRECTION_CHECK_TIMEOUT} from "../constants";
 import {weapons} from "../data/weapons"
 import {Bullet} from "./Bullet";
 import utils from "../utils";
@@ -49,6 +50,7 @@ export class AI extends Physics.Matter.Sprite{
     localTasks : Array<Object>
     currentLocalTaskIndex : null | number
     currentLocalTask : null | Object
+    movingDirectionCheckTimeout : number
 
     constructor(config) {
         super(config.scene.matter.world, config.x, config.y, "bandit", 0, {
@@ -92,6 +94,7 @@ export class AI extends Physics.Matter.Sprite{
         this.localTasks = []
         this.currentLocalTaskIndex = null
         this.currentLocalTask = null
+        this.movingDirectionCheckTimeout = 0
 
         // foot
         this.feet = config.scene.add.sprite(this.x,this.y,"feet")
@@ -368,6 +371,59 @@ export class AI extends Physics.Matter.Sprite{
         )
 
         this.currentLocalTask.moveTarget = circle.getRandomPoint()
+        let targetCircle = this.scene.add.circle(
+            this.currentLocalTask.moveTarget.x,
+            this.currentLocalTask.moveTarget.y,
+            15,
+            0xFF0000
+            )
+
+        // in world bounds
+        if(
+            this.currentLocalTask.moveTarget.x < 100 ||
+            this.currentLocalTask.moveTarget.x > this.scene.map.widthInPixels - 100 ||
+            this.currentLocalTask.moveTarget.y < 100 ||
+            this.currentLocalTask.moveTarget.y > this.scene.map.heightInPixels - 100
+        ) {
+            targetCircle.destroy()
+            this.generateLocalAttackMoveTarget()
+            return
+        }
+
+        // straight line collision with static bodies
+        let intersects = this.scene.matter.intersectRay(
+            this.x,
+            this.y,
+            this.currentLocalTask.moveTarget.x,
+            this.currentLocalTask.moveTarget.y,
+        )
+        if(intersects.length > 1){
+            targetCircle.destroy()
+            this.generateLocalAttackMoveTarget()
+            return
+        }
+
+        // collision with static bodies
+        let obstacles = this.scene.matter.world.getAllBodies().filter((body) => body.category === "obstacle" ),
+            pointMatterObject = this.scene.matter.add.image(
+                this.currentLocalTask.moveTarget.x,
+                this.currentLocalTask.moveTarget.y,
+                'aim_cursor',
+                null,
+                {
+                shape:{
+                    type: 'circle',
+                    radius: 30
+                },
+                isSensor:true,
+            }).setVisible(false)
+
+        if(this.scene.matter.intersectBody(pointMatterObject.body,obstacles).length){
+            targetCircle.destroy()
+            this.generateLocalAttackMoveTarget()
+        }
+
+        pointMatterObject.destroy()
     }
     moveTo(target) : void {
         this.isMoving = true
@@ -398,6 +454,14 @@ export class AI extends Physics.Matter.Sprite{
             }
 
             if(this.currentLocalTask.state === "inProgress"){
+                this.movingDirectionCheckTimeout++
+                if(this.movingDirectionCheckTimeout > NPC_MOVING_DIRECTION_CHECK_TIMEOUT){
+                    this.movingDirectionCheckTimeout = 0
+
+                    this.moveTo(this.currentLocalTask.moveTarget)
+                    return
+                }
+
                 if(this.readyToShoot){
                     this.rotation = Phaser.Math.Angle.Between(
                         this.x,

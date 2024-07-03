@@ -15,9 +15,10 @@ export const NPC_DETECTION_DISTANCE = 400
 export const NPC_BASIC_PLAYER_RELATION = 40
 export const NPC_DETECTION_INTERVAL = 1000
 export const NPC_ATTACK_TARGET_RADIUS_POINT = 400
+export const NPC_MOVING_DIRECTION_CHECK_TIMEOUT = 300 // frames
 
 // GAME
-export const GO_TO_COMPLETE_DISTANCE = 5
+export const GO_TO_COMPLETE_DISTANCE = 20
 
 // UI
 export const UI_MARGIN = 20
