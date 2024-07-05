@@ -73,6 +73,8 @@ export class Main extends Scene
                 let character = bodyA.label === "bullet" ? bodyB.gameObject : bodyA.gameObject,
                     bullet = bodyA.label === "bullet" ? bodyA.gameObject : bodyB.gameObject;
 
+                if(character.isSensor()) return;
+
                 character.getHitByBullet(bullet)
                 bullet.deactivate()
             }

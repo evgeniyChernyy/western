@@ -14,6 +14,7 @@ export class AI extends Physics.Matter.Sprite{
     // state and data
     name : string
     state : string
+    health : number
     stamina : number
     data : Array<Object>
     speed : number
@@ -39,7 +40,9 @@ export class AI extends Physics.Matter.Sprite{
     factions : Array<string>
 
     // tasks, player detection and helpful
+    startNewLocalTaskEvent : Time.TimerEvent
     detectionEvent : Time.TimerEvent
+    reloadEvent : Time.TimerEvent
     rotationTween : Tweens.Tween
 
     patrolPoints : Array<Object>
@@ -59,7 +62,7 @@ export class AI extends Physics.Matter.Sprite{
             frictionAir: 0,
         })
 
-        this.setScale(.5,.5).setDepth(PLAYER_DEPTH)
+        this.setScale(.5,.5).setDepth(PLAYER_DEPTH - 1)
 
         // technical
         this.category = "character"
@@ -67,7 +70,8 @@ export class AI extends Physics.Matter.Sprite{
         // config, inventory, state
         this.name = "bandit"
         this.state = "idle"
-        this.stamina = 100
+        this.health = config.health || 100
+        this.stamina = config.stamina || 100
         this.data = config.data
         this.speed = HUMAN_SPEED_WALK
         this.playerRelation = this.getDataByLabel("playerRelation") || NPC_BASIC_PLAYER_RELATION
@@ -167,6 +171,7 @@ export class AI extends Physics.Matter.Sprite{
     }
     initAnimations(){
         this.on(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation)=>{
+            console.log("stopped")
             if(animation.key === this.currentWeapon.label + "ReloadTransition" + "_" + this.name){
                 if(this.state === "reload"){
                     this.play(this.currentWeapon.label + "Reload" + "_" + this.name)
@@ -270,7 +275,7 @@ export class AI extends Physics.Matter.Sprite{
         this.canShoot = false
 
         this.play(this.currentWeapon.label + "ReloadTransition" + "_" + this.name)
-        this.scene.time.addEvent({
+        this.reloadEvent = this.scene.time.addEvent({
             delay:this.currentWeapon.reloadTime,
             callback:()=>{
                 this.state = "idle"
@@ -518,7 +523,7 @@ export class AI extends Physics.Matter.Sprite{
 
                 this.currentLocalTask.state = "inProgress"
 
-                this.scene.time.addEvent({
+                this.startNewLocalTaskEvent = this.scene.time.addEvent({
                     delay:this.currentLocalTask.duration,
                     callback:()=>{
                         this.startNextLocalTask()
@@ -543,8 +548,38 @@ export class AI extends Physics.Matter.Sprite{
 
             this.detectPlayer()
         }
+
+        this.health -= bullet.getData("damage")
+
+        if(this.health <= 0){
+            this.die()
+        }
+    }
+    die(){
+        this.state = "died"
+
+        this.setFrame(15)
+
+        this.globalTasks = []
+        this.currentGlobalTask = null
+        this.localTasks = []
+        this.currentLocalTask = null
+        this.stop()
+        this.feet.stop()
+        this.feet.setVisible(false)
+        this.setSensor(true)
+        this.setVelocity(0,0)
+        this.setAngularVelocity(0)
+        this.scene.time.removeEvent(this.detectionEvent)
+        this.scene.time.removeEvent(this.startNewLocalTaskEvent)
+        this.scene.time.removeEvent(this.reloadEvent)
+        if(this.rotationTween){
+            this.scene.tweens.remove(this.rotationTween)
+        }
     }
     update(){
+        if(this.state === "died") return
+
         if(this.currentLocalTask){
             this.handleLocalTask()
         }
