@@ -328,7 +328,7 @@ export class AI extends Physics.Matter.Sprite{
         })
     }
     getShootInaccuracyAngle() : number {
-        return Phaser.Math.FloatBetween(-.1,.1)
+        return Phaser.Math.FloatBetween(-this.currentWeapon.inaccuracyAngle,this.currentWeapon.inaccuracyAngle)
     }
     applyMuzzleEffect(muzzleX : number, muzzleY : number){
         this.muzzleFire.setPosition(this.x + muzzleX,this.y + muzzleY)

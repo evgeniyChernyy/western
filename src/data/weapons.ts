@@ -17,6 +17,7 @@ let weapons = [
         holderQuantity:6,
         holder1:6,
         damage:35,
+        inaccuracyAngle:.12,
     },
     {
         type:"weapon",
@@ -41,6 +42,7 @@ let weapons = [
         holder1:6,
         holder2:6,
         damage:35,
+        inaccuracyAngle:.15,
     },
     {
         type:"weapon",
@@ -61,6 +63,7 @@ let weapons = [
         holderQuantity:12,
         holder1:12,
         damage: 60,
+        inaccuracyAngle:.1,
     },
     {
         type:"grenade",
