@@ -68,8 +68,8 @@ export class Main extends Scene
                 bodyB.gameObject?.deactivate?.()
                 return
             }
-            if(bodyA.gameObject.category === "character" && bodyB.label === "bullet" ||
-                bodyB.gameObject.category === "character" && bodyA.label === "bullet"){
+            if(bodyA.gameObject?.category === "character" && bodyB.label === "bullet" ||
+                bodyB.gameObject?.category === "character" && bodyA.label === "bullet"){
                 let character = bodyA.label === "bullet" ? bodyB.gameObject : bodyA.gameObject,
                     bullet = bodyA.label === "bullet" ? bodyA.gameObject : bodyB.gameObject;
 

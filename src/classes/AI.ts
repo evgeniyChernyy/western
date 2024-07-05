@@ -458,7 +458,8 @@ export class AI extends Physics.Matter.Sprite{
 
             if(this.currentLocalTask.state === "inProgress"){
                 this.movingDirectionCheckTimeout++
-                if(this.movingDirectionCheckTimeout > NPC_MOVING_DIRECTION_CHECK_TIMEOUT){
+                if(this.movingDirectionCheckTimeout > NPC_MOVING_DIRECTION_CHECK_TIMEOUT
+                && this.currentLocalTask.moveTarget){
                     this.movingDirectionCheckTimeout = 0
 
                     this.moveTo(this.currentLocalTask.moveTarget)
