@@ -79,6 +79,8 @@ export class Main extends Scene
                 bullet.deactivate()
             }
         });
+
+        this.scene.run("UI")
     }
     createAnimations(){
         this.anims.create({

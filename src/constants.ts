@@ -6,6 +6,7 @@ export const HUMAN_SPEED_WALK = 2.5
 export const HUMAN_SPEED_RUN = 4
 export const STAMINA_SPENDING = .5
 export const STAMINA_RECOVERY = .25
+export const HEALTH_RECOVERY_TIMEOUT = 5000
 
 // AI and NPC
 export const IDLE_DURATION = 5000

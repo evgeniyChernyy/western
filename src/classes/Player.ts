@@ -1,6 +1,8 @@
-import { Physics, GameObjects, Input } from 'phaser';
-import {PLAYER_DEPTH, HUMAN_SPEED_WALK, HUMAN_SPEED_RUN, UI_COLOR_RED_CSS, UI_DEPTH,
-    UI_COLOR_RED,UI_COLOR_SILVER,UI_MARGIN,STAMINA_SPENDING,STAMINA_RECOVERY} from "../constants"
+import { Physics, GameObjects, Input, Time } from 'phaser';
+import {
+    PLAYER_DEPTH, HEALTH_RECOVERY_TIMEOUT, HUMAN_SPEED_WALK, HUMAN_SPEED_RUN, UI_COLOR_RED_CSS, UI_DEPTH,
+    UI_COLOR_RED, UI_COLOR_SILVER, UI_MARGIN, STAMINA_SPENDING, STAMINA_RECOVERY
+} from "../constants"
 import {Bullet} from "../classes/Bullet";
 import {Grenade} from "../classes/Grenade";
 import {weapons,ammo} from "../data/weapons"
@@ -10,6 +12,7 @@ export class Player extends Physics.Matter.Sprite{
     category : string
 
     state : string
+    health : number
     stamina : number
     speed : number
 
@@ -32,6 +35,9 @@ export class Player extends Physics.Matter.Sprite{
     // player world status and missions etc
     factions : Array<string>
 
+    // technical events etc
+    healthRecoveryEvent : Time.TimerEvent
+
     feet : GameObjects.Sprite
 
     constructor(config) {
@@ -48,7 +54,8 @@ export class Player extends Physics.Matter.Sprite{
 
         // config, inventory, state
         this.state = "idle"
-        this.stamina = 100
+        this.health = config.health || 100
+        this.stamina = config.stamina || 100
         this.speed = HUMAN_SPEED_WALK
         this.bullets = []
         this.grenades = []
@@ -82,6 +89,15 @@ export class Player extends Physics.Matter.Sprite{
         this.createAnimations()
         this.initControls(config.scene)
         this.initWeaponsSelect()
+        this.initAdditionalEvents()
+    }
+    initAdditionalEvents(){
+        this.healthRecoveryEvent = this.scene.time.addEvent({
+            delay: HEALTH_RECOVERY_TIMEOUT,
+            callback:this.recoverHealth,
+            callbackScope:this,
+            repeat: -1
+        })
     }
     createWeaponUI(config : object){
         this.weaponIcon = config.scene.add.sprite(
@@ -417,7 +433,32 @@ export class Player extends Physics.Matter.Sprite{
         })
     }
     getHitByBullet(bullet){
+        this.health -= bullet.getData("damage")
 
+        if(this.health <= 0){
+            this.health = 0
+            this.die()
+        }
+
+        this.scene.game.events.emit("updatePlayerStat",{
+            statName:"health",
+            statValue:this.health
+        })
+    }
+    recoverHealth(value: number = 5){
+        if(this.health === 100) return
+
+        this.health += value
+
+        if(this.health > 100) this.health = 100
+
+        this.scene.game.events.emit("updatePlayerStat",{
+            statName:"health",
+            statValue:this.health
+        })
+    }
+    die(){
+        l("Player died!")
     }
     update(){
         if(this.controlKeys.shift.isDown){
