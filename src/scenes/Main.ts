@@ -80,7 +80,9 @@ export class Main extends Scene
             }
         });
 
-        this.scene.run("UI")
+        this.scene.run("UI",{
+            player:this.player
+        })
     }
     createAnimations(){
         this.anims.create({

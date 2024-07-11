@@ -20,8 +20,6 @@ export class Player extends Physics.Matter.Sprite{
     muzzleFire : GameObjects.Image
     aim : GameObjects.Image
 
-    staminaBar : GameObjects.Rectangle
-
     bullets : Array<Bullet>
     grenades : Array<Grenade>
     controlKeys : object
@@ -29,9 +27,6 @@ export class Player extends Physics.Matter.Sprite{
     ammo : object
     weapons : Array<object>
     currentWeapon : object
-    weaponIcon : GameObjects.Image
-    weaponAmmoUIText : GameObjects.Text
-    weaponNameUIText : GameObjects.Text
 
     // player world status and missions etc
     factions : Array<string>
@@ -82,14 +77,6 @@ export class Player extends Physics.Matter.Sprite{
 
         config.scene.add.existing(this)
 
-        this.staminaBar = config.scene.add.rectangle(
-            UI_MARGIN,
-            this.scene.game.config.canvas.height - UI_MARGIN * 2,
-            Math.ceil(200 * (this.stamina / 100)),
-            20,
-            UI_COLOR_SILVER
-        ).setScrollFactor(0).setDepth(UI_DEPTH).setOrigin(0,0)
-        this.createWeaponUI(config)
         this.createAnimations()
         this.initControls(config.scene)
         this.initWeaponsSelect()
@@ -102,31 +89,6 @@ export class Player extends Physics.Matter.Sprite{
             callbackScope:this,
             repeat: -1
         })
-    }
-    createWeaponUI(config : object){
-        this.weaponIcon = config.scene.add.sprite(
-            config.scene.game.config.canvas.width - UI_MARGIN,
-            config.scene.game.config.canvas.height - 60,
-            "weapons_icons",
-            this.currentWeapon.iconIndex
-        ).setOrigin(1,1).setScale(.5).setScrollFactor(0).setDepth(UI_DEPTH)
-
-        this.weaponAmmoUIText = config.scene.add.text(
-            this.weaponIcon.getBottomCenter().x,
-            config.scene.game.config.canvas.height - UI_MARGIN * 2,
-            this.getAmmoUIText(),
-            {fontSize:28,color:UI_COLOR_RED_CSS,fontFamily:"Arial, sans-serif"}
-        ).setOrigin(.5,1).setScrollFactor(0).setDepth(UI_DEPTH)
-
-        this.weaponNameUIText = config.scene.add.text(
-            this.weaponAmmoUIText.getBottomRight().x,
-            config.scene.game.config.canvas.height - 15,
-            this.currentWeapon.name,
-            {fontSize:24,color:UI_COLOR_RED_CSS,fontFamily:"Arial, sans-serif"}
-        ).setOrigin(1,1).setScrollFactor(0).setDepth(UI_DEPTH)
-    }
-    updateStatsUI(){
-        this.staminaBar.width = Math.ceil(200 * (this.stamina / 100))
     }
     createAnimations(){
         this.anims.create({
@@ -272,19 +234,15 @@ export class Player extends Physics.Matter.Sprite{
 
         this.currentWeapon = this.weapons[newCurrentWeaponIndex]
 
-        this.updateWeaponUI()
+        this.scene.game.events.emit("updatePlayerWeaponUI")
+        this.setFrame(this.currentWeapon.spriteIndex)
     }
     toggleWeapon(index : number){
         if(this.weapons[index]){
             this.currentWeapon = this.weapons[index]
-            this.updateWeaponUI()
+            this.scene.game.events.emit("updatePlayerWeaponUI")
+            this.setFrame(this.currentWeapon.spriteIndex)
         }
-    }
-    updateWeaponUI(){
-        this.weaponAmmoUIText.setText(this.getAmmoUIText())
-        this.weaponNameUIText.setText(this.currentWeapon.name)
-        this.setFrame(this.currentWeapon.spriteIndex)
-        this.weaponIcon.setFrame(this.currentWeapon.iconIndex)
     }
     reload(){
         if(this.currentWeapon.type === "grenade" || this.ammo[this.currentWeapon.ammoType] === 0
@@ -319,20 +277,11 @@ export class Player extends Physics.Matter.Sprite{
                     this.currentWeapon.holder1 += ammoQuantity
                 }
 
-                this.weaponAmmoUIText.setText(this.getAmmoUIText())
                 this.stop()
                 this.play(this.currentWeapon.label + "ReloadTransition")
+                this.scene.game.events.emit("updatePlayerWeaponUI")
             },
         })
-    }
-    getAmmoUIText() : string{
-        if(this.currentWeapon.type === "weapon"){
-            let holder2Text = this.currentWeapon.double ? "-" + this.currentWeapon.holder2 : ""
-            return this.currentWeapon.holder1 + holder2Text + "/" + this.ammo[this.currentWeapon.ammoType]
-        }
-        if(this.currentWeapon.type === "grenade"){
-            return this.ammo[this.currentWeapon.ammoType]
-        }
     }
     shoot(weaponIndex = 1){
         // no ammo
@@ -343,8 +292,9 @@ export class Player extends Physics.Matter.Sprite{
         // update state and ui
         this.canShoot = false
         this.currentWeapon["holder" + weaponIndex]--
-        this.weaponAmmoUIText.setText(this.getAmmoUIText())
+        this.scene.game.events.emit("updatePlayerWeaponUI")
 
+        // shoot effect
         this.scene.cameras.main.shake(this.currentWeapon.shakeDuration,this.currentWeapon.shakeIntensity,true);
 
         let muzzleX = this.currentWeapon["offsetX" + weaponIndex] * Math.cos(this.rotation) - this.currentWeapon["offsetY" + weaponIndex] * Math.sin(this.rotation),
@@ -390,7 +340,7 @@ export class Player extends Physics.Matter.Sprite{
         // update state and ui
         this.canShoot = false
         this.ammo[this.currentWeapon.ammoType]--
-        this.weaponAmmoUIText.setText(this.getAmmoUIText())
+        this.scene.game.events.emit("updatePlayerWeaponUI")
 
         this.play(this.currentWeapon.label + "Throw")
     }
@@ -500,7 +450,6 @@ export class Player extends Physics.Matter.Sprite{
         } else if(this.stamina < 100) {
             this.stamina += STAMINA_RECOVERY
         }
-        this.updateStatsUI()
 
         // rotation
         this.rotation = Phaser.Math.Angle.Between(
