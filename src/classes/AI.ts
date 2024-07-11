@@ -54,7 +54,7 @@ export class AI extends Physics.Matter.Sprite{
     currentLocalTaskIndex : null | number
     currentLocalTask : null | Object
     movingDirectionCheckTimeout : number
-    fightSitutationCheckTimeout : number
+    fightSituationCheckTimeout : number
 
     constructor(config) {
         super(config.scene.matter.world, config.x, config.y, "bandit", 0, {
@@ -100,7 +100,7 @@ export class AI extends Physics.Matter.Sprite{
         this.currentLocalTaskIndex = null
         this.currentLocalTask = null
         this.movingDirectionCheckTimeout = 0
-        this.fightSitutationCheckTimeout = 0
+        this.fightSituationCheckTimeout = 0
 
         // foot
         this.feet = config.scene.add.sprite(this.x,this.y,"feet")
@@ -473,10 +473,10 @@ export class AI extends Physics.Matter.Sprite{
 
             if(this.currentLocalTask.state === "inProgress"){
                 this.movingDirectionCheckTimeout++
-                this.fightSitutationCheckTimeout++
+                this.fightSituationCheckTimeout++
 
                 // target died
-                if(this.fightSitutationCheckTimeout > NPC_MOVING_FIGHT_CHECK_TIMEOUT){
+                if(this.fightSituationCheckTimeout > NPC_MOVING_FIGHT_CHECK_TIMEOUT){
                     if(this.currentLocalTask.target.state === "died"){
                         let currentGlobalTaskIndex = this.currentGlobalTaskIndex
                         this.startNextGlobalTask()
