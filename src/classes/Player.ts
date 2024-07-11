@@ -9,6 +9,7 @@ import {weapons,ammo} from "../data/weapons"
 
 export class Player extends Physics.Matter.Sprite{
 
+    controllable : boolean
     category : string
 
     state : string
@@ -37,6 +38,8 @@ export class Player extends Physics.Matter.Sprite{
 
     // technical events etc
     healthRecoveryEvent : Time.TimerEvent
+    reloadEvent : Time.TimerEvent
+    shootDelayEvent : Time.TimerEvent
 
     feet : GameObjects.Sprite
 
@@ -50,6 +53,7 @@ export class Player extends Physics.Matter.Sprite{
         this.setScale(.5,.5).setDepth(PLAYER_DEPTH)
 
         // technical
+        this.controllable = true
         this.category = "character"
 
         // config, inventory, state
@@ -191,6 +195,8 @@ export class Player extends Physics.Matter.Sprite{
 
         // Enables movement of player with WASD keys
         scene.input.keyboard.on('keydown', event => {
+            if(!this.controllable) return
+
             // run
             if(event.key === "Shift"){
                 this.speed = HUMAN_SPEED_RUN
@@ -205,6 +211,8 @@ export class Player extends Physics.Matter.Sprite{
             }
         });
         scene.input.keyboard.on('keyup', event => {
+            if(!this.controllable) return
+
             // run
             if(event.key === "Shift"){
                 this.speed = HUMAN_SPEED_WALK
@@ -234,6 +242,8 @@ export class Player extends Physics.Matter.Sprite{
         });
     }
     updateSpeed(){
+        if(!this.controllable) return
+
         if (this.controlKeys['up'].isDown && !this.controlKeys['down'].isDown) { this.setVelocityY(-this.speed); }
         if (this.controlKeys['down'].isDown && !this.controlKeys['up'].isDown) { this.setVelocityY(this.speed); }
         if (this.controlKeys['left'].isDown && !this.controlKeys['right'].isDown) { this.setVelocityX(-this.speed); }
@@ -285,7 +295,7 @@ export class Player extends Physics.Matter.Sprite{
         this.canShoot = false
 
         this.play(this.currentWeapon.label + "ReloadTransition")
-        this.scene.time.addEvent({
+        this.reloadEvent = this.scene.time.addEvent({
             delay:this.currentWeapon.reloadTime,
             callback:()=>{
                 this.state = "idle"
@@ -360,7 +370,7 @@ export class Player extends Physics.Matter.Sprite{
         }
 
         let weapon = this.currentWeapon
-        this.scene.time.addEvent({
+        this.shootDelayEvent = this.scene.time.addEvent({
             delay:this.currentWeapon.shootDelay,
             callback:()=>{
                 this.canShoot = true
@@ -410,7 +420,7 @@ export class Player extends Physics.Matter.Sprite{
             }))
         }
 
-        this.scene.time.addEvent({
+        this.shootDelayEvent = this.scene.time.addEvent({
             delay:this.currentWeapon.throwDelay,
             callback:()=>{
                 this.canShoot = true
@@ -458,9 +468,25 @@ export class Player extends Physics.Matter.Sprite{
         })
     }
     die(){
-        l("Player died!")
+        this.state = "died"
+        this.controllable = false
+
+        this.setFrame(15)
+
+        this.stop()
+        this.feet.stop()
+        this.feet.setVisible(false)
+        this.setSensor(true)
+        this.setVelocity(0,0)
+        this.setAngularVelocity(0)
+
+        this.scene.time.removeEvent(this.healthRecoveryEvent)
+        this.scene.time.removeEvent(this.reloadEvent)
+        this.scene.time.removeEvent(this.shootDelayEvent)
     }
     update(){
+        if(!this.controllable) return
+
         if(this.controlKeys.shift.isDown){
             if(this.stamina > 0){
                 this.stamina -= STAMINA_SPENDING
@@ -488,6 +514,7 @@ export class Player extends Physics.Matter.Sprite{
         this.feet.x = this.x
         this.feet.y = this.y
         this.feet.rotation = this.rotation
+
 
         // straight and side walk
         let playerVelocity = this.getVelocity()

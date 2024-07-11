@@ -2,7 +2,7 @@ import { Physics, GameObjects, Tweens, Time } from 'phaser';
 import {PLAYER_DEPTH, HUMAN_SPEED_WALK, IDLE_DURATION, GO_TO_COMPLETE_DISTANCE,
     NPC_AGGRESSION_LEVEL,NPC_DETECTION_DISTANCE,NPC_BASIC_PLAYER_RELATION,
     NPC_DETECTION_INTERVAL,NPC_HIT_RELATION_DECREASE,NPC_ATTACK_TARGET_RADIUS_POINT,
-    NPC_MOVING_DIRECTION_CHECK_TIMEOUT} from "../constants";
+    NPC_MOVING_DIRECTION_CHECK_TIMEOUT,NPC_MOVING_FIGHT_CHECK_TIMEOUT} from "../constants";
 import {weapons} from "../data/weapons"
 import {Bullet} from "./Bullet";
 import utils from "../utils";
@@ -54,6 +54,7 @@ export class AI extends Physics.Matter.Sprite{
     currentLocalTaskIndex : null | number
     currentLocalTask : null | Object
     movingDirectionCheckTimeout : number
+    fightSitutationCheckTimeout : number
 
     constructor(config) {
         super(config.scene.matter.world, config.x, config.y, "bandit", 0, {
@@ -99,6 +100,7 @@ export class AI extends Physics.Matter.Sprite{
         this.currentLocalTaskIndex = null
         this.currentLocalTask = null
         this.movingDirectionCheckTimeout = 0
+        this.fightSitutationCheckTimeout = 0
 
         // foot
         this.feet = config.scene.add.sprite(this.x,this.y,"feet")
@@ -139,13 +141,10 @@ export class AI extends Physics.Matter.Sprite{
                 name:"attack",
                 target:this.scene.player,
                 state:"inProgress",
-                canEnd:true
             })
         }
     }
     losePlayer(){
-        this.playerDetected = false
-
         l("lost sight of player")
     }
     getDataByLabel(label : string) : undefined | number | string {
@@ -159,19 +158,16 @@ export class AI extends Physics.Matter.Sprite{
             return [{
                 name:"patrol",
                 state:"stopped",
-                canEnd:false
             }]
         } else {
             return [{
                 name:"idle",
                 state:"stopped",
-                canEnd:false
             }]
         }
     }
     initAnimations(){
         this.on(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation)=>{
-            console.log("stopped")
             if(animation.key === this.currentWeapon.label + "ReloadTransition" + "_" + this.name){
                 if(this.state === "reload"){
                     this.play(this.currentWeapon.label + "Reload" + "_" + this.name)
@@ -204,7 +200,7 @@ export class AI extends Physics.Matter.Sprite{
             this.currentGlobalTaskIndex++
 
             if(this.currentGlobalTaskIndex >= this.globalTasks.length){
-                this.currentGlobalTask = 0
+                this.currentGlobalTaskIndex = 0
             }
 
             this.currentGlobalTask = this.globalTasks[this.currentGlobalTaskIndex]
@@ -213,11 +209,14 @@ export class AI extends Physics.Matter.Sprite{
 
         this.generateLocalTasks()
     }
+    removeGlobalTaskByIndex(index){
+        this.globalTasks.splice(index,1)
+    }
     addAndStartGlobalTask(task){
         this.globalTasks.push(task)
 
         this.currentGlobalTask.state = "stopped"
-        this.currentLocalTaskIndex = this.globalTasks.length - 1
+        this.currentGlobalTaskIndex = this.globalTasks.length - 1
         this.currentGlobalTask = task
 
         this.generateLocalTasks()
@@ -235,6 +234,16 @@ export class AI extends Physics.Matter.Sprite{
     }
     generateLocalTasks(){
         this.localTasks = []
+        this.currentLocalTaskIndex = null
+        this.currentLocalTask = null
+
+        if(this.currentGlobalTask.name === "idle"){
+            this.localTasks.push({
+                name:"idle",
+                duration:5000,
+                state:"stopped"
+            })
+        }
 
         if(this.currentGlobalTask.name === "patrol"){
             this.localTasks.push({
@@ -459,10 +468,23 @@ export class AI extends Physics.Matter.Sprite{
                         this.moveTo(this.currentLocalTask.moveTarget)
                     }
                 })
+                return
             }
 
             if(this.currentLocalTask.state === "inProgress"){
                 this.movingDirectionCheckTimeout++
+                this.fightSitutationCheckTimeout++
+
+                // target died
+                if(this.fightSitutationCheckTimeout > NPC_MOVING_FIGHT_CHECK_TIMEOUT){
+                    if(this.currentLocalTask.target.state === "died"){
+                        let currentGlobalTaskIndex = this.currentGlobalTaskIndex
+                        this.startNextGlobalTask()
+                        this.removeGlobalTaskByIndex(currentGlobalTaskIndex)
+                        return
+                    }
+                }
+
                 if(this.movingDirectionCheckTimeout > NPC_MOVING_DIRECTION_CHECK_TIMEOUT
                 && this.currentLocalTask.moveTarget){
                     this.movingDirectionCheckTimeout = 0
@@ -505,6 +527,7 @@ export class AI extends Physics.Matter.Sprite{
                 })
 
                 this.moveTo(this.currentLocalTask.target)
+                return
             }
 
             if(this.currentLocalTask.state === "inProgress"){
@@ -520,6 +543,10 @@ export class AI extends Physics.Matter.Sprite{
         if(this.currentLocalTask.name === "idle"){
             if(this.currentLocalTask.state === "stopped"){
                 this.isMoving = false
+
+                this.setVelocity(0,0)
+                this.setAngularVelocity(0)
+                this.feet.stop()
 
                 this.currentLocalTask.state = "inProgress"
 
