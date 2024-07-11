@@ -214,7 +214,7 @@ export class Player extends Physics.Matter.Sprite{
     initWeaponsSelect(){
         this.scene.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) =>
         {
-            if(this.state !== "reload"){
+            if(this.state !== "reload" && this.controllable){
                 this.selectWeapon(deltaY > 0)
             }
         });

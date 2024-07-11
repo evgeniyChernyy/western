@@ -135,6 +135,9 @@ export class AI extends Physics.Matter.Sprite{
 
         this.playerDetected = true
 
+        this.attackPlayer()
+    }
+    attackPlayer(){
         if(this.playerRelation <= NPC_AGGRESSION_LEVEL){
             // add task to shoot
             this.addAndStartGlobalTask({
@@ -573,7 +576,7 @@ export class AI extends Physics.Matter.Sprite{
         if(bullet.getData("owner") === this.scene.player && !this.hasCommonFactions(this.scene.player)){
             this.playerRelation -= NPC_HIT_RELATION_DECREASE
 
-            this.detectPlayer()
+            this.attackPlayer()
         }
 
         this.health -= bullet.getData("damage")
