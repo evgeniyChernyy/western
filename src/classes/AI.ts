@@ -3,6 +3,7 @@ import {PLAYER_DEPTH, HUMAN_SPEED_WALK, IDLE_DURATION, GO_TO_COMPLETE_DISTANCE,
     NPC_AGGRESSION_LEVEL,NPC_DETECTION_DISTANCE,NPC_BASIC_PLAYER_RELATION,
     NPC_DETECTION_INTERVAL,NPC_HIT_RELATION_DECREASE,NPC_ATTACK_TARGET_RADIUS_POINT,
     NPC_MOVING_DIRECTION_CHECK_TIMEOUT,NPC_MOVING_FIGHT_CHECK_TIMEOUT} from "../constants";
+import {BloodDrop} from "./BloodDrop"
 import {weapons} from "../data/weapons"
 import {Bullet} from "./Bullet";
 import utils from "../utils";
@@ -138,6 +139,8 @@ export class AI extends Physics.Matter.Sprite{
         this.attackPlayer()
     }
     attackPlayer(){
+        if(this.currentGlobalTask.name === "attack") return
+
         if(this.playerRelation <= NPC_AGGRESSION_LEVEL){
             // add task to shoot
             this.addAndStartGlobalTask({
@@ -460,6 +463,7 @@ export class AI extends Physics.Matter.Sprite{
 
                 let rotation = this.getCorrectTweenRotationToTarget(this.currentLocalTask.target)
 
+
                 this.rotationTween = this.scene.tweens.add({
                     targets:this,
                     rotation,
@@ -581,8 +585,16 @@ export class AI extends Physics.Matter.Sprite{
 
         this.health -= bullet.getData("damage")
 
+        this.emitBlood()
+
         if(this.health <= 0){
             this.die()
+        }
+    }
+    emitBlood(){
+        let bloodLength = Phaser.Math.Between(4,8)
+        for(let i = 0; i < bloodLength; i++){
+            new BloodDrop(this)
         }
     }
     die(){
