@@ -6,6 +6,7 @@ import {
 import {Bullet} from "../classes/Bullet";
 import {Grenade} from "../classes/Grenade";
 import {weapons,ammo} from "../data/weapons"
+import {BloodDrop} from "./BloodDrop";
 
 export class Player extends Physics.Matter.Sprite{
 
@@ -395,6 +396,8 @@ export class Player extends Physics.Matter.Sprite{
     getHitByBullet(bullet){
         this.health -= bullet.getData("damage")
 
+        this.emitBlood(bullet)
+
         if(this.health <= 0){
             this.health = 0
             this.die()
@@ -404,6 +407,19 @@ export class Player extends Physics.Matter.Sprite{
             statName:"health",
             statValue:this.health
         })
+    }
+    emitBlood(bullet : Bullet) : void {
+        let bloodLength = Phaser.Math.Between(6,10),
+            bulletVelocity = bullet.getVelocity()
+        for(let i = 0; i < bloodLength; i++){
+            let speedX = bulletVelocity.x + Phaser.Math.Between(-50,50),
+                speedY = bulletVelocity.y + Phaser.Math.Between(-50,50)
+
+            new BloodDrop(this,{
+                speedX,
+                speedY
+            })
+        }
     }
     recoverHealth(value: number = 5){
         if(this.health === 100) return

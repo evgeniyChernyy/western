@@ -576,7 +576,7 @@ export class AI extends Physics.Matter.Sprite{
         }
         return hasCommonFactions
     }
-    getHitByBullet(bullet){
+    getHitByBullet(bullet) : void {
         if(bullet.getData("owner") === this.scene.player && !this.hasCommonFactions(this.scene.player)){
             this.playerRelation -= NPC_HIT_RELATION_DECREASE
 
