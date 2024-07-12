@@ -585,16 +585,23 @@ export class AI extends Physics.Matter.Sprite{
 
         this.health -= bullet.getData("damage")
 
-        this.emitBlood()
+        this.emitBlood(bullet)
 
         if(this.health <= 0){
             this.die()
         }
     }
-    emitBlood(){
-        let bloodLength = Phaser.Math.Between(4,8)
+    emitBlood(bullet : Bullet){
+        let bloodLength = Phaser.Math.Between(6,10),
+            bulletVelocity = bullet.getVelocity()
         for(let i = 0; i < bloodLength; i++){
-            new BloodDrop(this)
+            let speedX = bulletVelocity.x + Phaser.Math.Between(-50,50),
+                speedY = bulletVelocity.y + Phaser.Math.Between(-50,50)
+
+            new BloodDrop(this,{
+                speedX,
+                speedY
+            })
         }
     }
     die(){
