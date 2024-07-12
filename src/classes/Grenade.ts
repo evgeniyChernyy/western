@@ -9,7 +9,7 @@ export class Grenade extends Physics.Matter.Sprite{
     constructor(config) {
         super(config.scene.matter.world,config.x,config.y,config.label,null,{
             frictionAir:.05,
-            label:config.label
+            label:"grenade",
         })
 
         this.setScale(this.initialScale,this.initialScale)
@@ -55,7 +55,7 @@ export class Grenade extends Physics.Matter.Sprite{
     }
     explode(){
         this.setSensor(true)
-        this.setScale(2,2)
+        this.setScale(2.5,2.5)
         this.play("explosion")
     }
     deactivate(){

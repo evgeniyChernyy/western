@@ -14,8 +14,6 @@ export class BloodDrop extends Phaser.GameObjects.Ellipse{
         this.init(spread)
     }
     init(spread : Object){
-        let speedX = Phaser.Math.Between(-80,80),
-            speedY = Phaser.Math.Between(-80,80)
         this.scene.tweens.add({
             targets: this,
             duration: 150,

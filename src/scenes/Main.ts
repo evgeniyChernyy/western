@@ -78,6 +78,15 @@ export class Main extends Scene
                 character.getHitByBullet(bullet)
                 bullet.deactivate()
             }
+            if(bodyA.gameObject?.category === "character" && bodyB.label === "grenade" ||
+                bodyB.gameObject?.category === "character" && bodyA.label === "grenade"){
+                let character = bodyA.label === "grenade" ? bodyB.gameObject : bodyA.gameObject,
+                    grenade = bodyA.label === "grenade" ? bodyA.gameObject : bodyB.gameObject;
+
+                if(character.isSensor() || !grenade.isSensor()) return;
+
+                character.getHitByGrenade()
+            }
         });
 
         this.scene.run("UI",{
