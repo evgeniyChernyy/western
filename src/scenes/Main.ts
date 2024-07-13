@@ -78,12 +78,11 @@ export class Main extends Scene
                 character.getHitByBullet(bullet)
                 bullet.deactivate()
             }
-            if(bodyA.gameObject?.category === "character" && bodyB.label === "grenade" ||
-                bodyB.gameObject?.category === "character" && bodyA.label === "grenade"){
-                let character = bodyA.label === "grenade" ? bodyB.gameObject : bodyA.gameObject,
-                    grenade = bodyA.label === "grenade" ? bodyA.gameObject : bodyB.gameObject;
+            if(bodyA.gameObject?.category === "character" && bodyB.label === "explosion" ||
+                bodyB.gameObject?.category === "character" && bodyA.label === "explosion"){
+                let character = bodyA.label === "explosion" ? bodyB.gameObject : bodyA.gameObject
 
-                if(character.isSensor() || !grenade.isSensor()) return;
+                if(character.isSensor() || character.state === "died") return;
 
                 character.getHitByGrenade()
             }

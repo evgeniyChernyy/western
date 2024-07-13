@@ -1,6 +1,7 @@
 import {Physics, Time} from "phaser";
+import {Explosion} from "./Explosion";
 
-export class Grenade extends Physics.Matter.Sprite{
+export class Grenade extends Physics.Matter.Image{
 
     explodeEvent : Time.TimerEvent
     throwAngularVelocity : number = .5
@@ -21,19 +22,11 @@ export class Grenade extends Physics.Matter.Sprite{
 
         config.scene.add.existing(this)
 
-        this.on(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation)=>{
-            if(animation.key === "explosion"){
-                this.deactivate()
-            }
-        }, this)
-
         this.startExplodeDelay(config.explosionDelay)
     }
     fire(x,y,rotation,explosionDelay,speed){
-        this.setSensor(false)
         this.setTexture(this.name)
         this.setAngularVelocity(this.throwAngularVelocity)
-        this.setScale(this.initialScale,this.initialScale)
         this.setPosition(x, y)
 
         // show dynamite
@@ -54,9 +47,14 @@ export class Grenade extends Physics.Matter.Sprite{
         })
     }
     explode(){
-        this.setSensor(true)
-        this.setScale(2.5,2.5)
-        this.play("explosion")
+        new Explosion({
+            scene:this.scene,
+            x:this.x,
+            y:this.y,
+            startCallback:()=>{
+                this.deactivate()
+            }
+        })
     }
     deactivate(){
         this.setActive(false);
