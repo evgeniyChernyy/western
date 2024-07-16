@@ -18,6 +18,11 @@ let DialogerUI = {
         toggleCurrentDialog(dialogLabel : string) : void {
             this.currentDialogText = this.dialog[dialogLabel]["text"]
             this.currentDialogOptions = this.dialog[dialogLabel]["options"]
+        },
+        closeDialog() : void {
+            this.open = false
+
+            document.dispatchEvent(new CustomEvent("CloseDialog"))
         }
     },
     template:`
@@ -34,6 +39,9 @@ let DialogerUI = {
                             @click="toggleCurrentDialog(option.next)"
                             >
                                 {{ option.text }}</p>
+                        </div>
+                        <div class="dialoger-ui__actions-container">
+                            <button class="dialoger-ui__action-btn" @click="closeDialog">Exit</button>
                         </div>
                     </div>
                 </div>

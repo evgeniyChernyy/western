@@ -65,6 +65,9 @@ export class Main extends Scene
             this.game.input.mouse.requestPointerLock()
         });
 
+        // events etc
+        this.initEvents()
+
         // map triggers
         this.triggersLayer = this.map.getObjectLayer("triggers")
         this.triggers = []
@@ -110,7 +113,9 @@ export class Main extends Scene
                 this.player.stand()
                 this.player.setControllable(false)
                 document.exitPointerLock()
-                this.startDialog(trigger)
+                document.dispatchEvent(
+                    new CustomEvent("StartDialog", { detail: trigger.characterLabel })
+                )
             }
         });
 
@@ -118,8 +123,11 @@ export class Main extends Scene
             player:this.player
         })
     }
-    startDialog(trigger : Object){
-        document.dispatchEvent(new CustomEvent("StartDialog", { detail: trigger.characterLabel }))
+    initEvents(){
+        document.addEventListener("CloseDialog",(event) => {
+            this.player.setControllable(true)
+            this.game.input.mouse.requestPointerLock()
+        });
     }
     createAnimations(){
         this.anims.create({
