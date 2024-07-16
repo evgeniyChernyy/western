@@ -58,6 +58,9 @@ game.custom = {
 game.state = {
     aliceAlive:true
 }
+game.dialogsVariables = {
+    "%FACTION_NAME%":"Red Skulls"
+}
 
 // this = context = game
 function resize (scene)

@@ -7,13 +7,9 @@ export default class Dialoger {
     scene : Scene
     dialogerUI : null | Object
 
-    dialogs : Object
-
     constructor(config) {
         this.game = config.scene.game
         this.scene = config.scene
-
-        this.dialogs = null
 
         this.init()
     }
@@ -26,7 +22,8 @@ export default class Dialoger {
     }
     init(){
         this.dialogerUI = Vue.createApp(DialogerUI,{
-            gameState:this.game.state
+            gameState:this.game.state,
+            dialogsVariables:this.game.dialogsVariables
         }).mount('#dialogerContainer')
 
         // Listen for the event.

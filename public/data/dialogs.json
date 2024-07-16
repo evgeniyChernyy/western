@@ -13,7 +13,7 @@
       ]
     },
     "newTask": {
-      "text": "I have a new job for you",
+      "text": "I have a new job for you. That bastards from %FACTION_NAME% annoying me...",
       "options": [{
         "text": "Naaaaice!",
         "next": "getNewTask"

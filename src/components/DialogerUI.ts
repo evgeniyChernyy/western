@@ -1,6 +1,7 @@
 let DialogerUI = {
     props:{
-        gameState:{type:Object}
+        gameState:{type:Object},
+        dialogsVariables:{type:Object}
     },
     data() {
         return {
@@ -19,7 +20,7 @@ let DialogerUI = {
             this.open = true
         },
         toggleCurrentDialog(dialogLabel : string) : void {
-            this.currentDialogText = this.dialog[dialogLabel]["text"]
+            this.currentDialogText = this.replaceVariables(this.dialog[dialogLabel]["text"])
             this.currentDialogOptions = this.checkOptionsCondition(this.dialog[dialogLabel]["options"])
         },
         checkOptionsCondition(options : Array<Object>) : Array<Object> {
@@ -29,6 +30,12 @@ let DialogerUI = {
               }
           })
             return options
+        },
+        replaceVariables(phrase : string) : string {
+            phrase = phrase.replace(/%\w+%/g, (variableCode)=>{
+                return this.dialogsVariables[variableCode]
+            })
+            return phrase
         },
         closeDialog() : void {
             this.open = false
