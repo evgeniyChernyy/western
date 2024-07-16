@@ -3,7 +3,7 @@
     "welcome": {
       "text": "Hello Evgen! How are you doing?",
       "options": [{
-        "text": "I`m Ok, thank you!",
+        "text": "I`m Ok, thank you! Are your from %CITY%?",
         "next": "newTask"
       },
       {
@@ -21,12 +21,20 @@
         {
         "text": "You are bastard!",
         "next": "refuse",
-        "condition": "aliceAlive"
+        "condition": "aliceAlive",
+        "makeTrue": "peoplesRelation"
       },
         {
           "text": "No, thank you. I dont need",
           "next": "refuse"
         }]
+    },
+    "refuse": {
+      "text": "You are refused, ok...",
+      "options": [{
+        "text": "Yes...",
+        "next": "out"
+      }]
     }
   }
 }

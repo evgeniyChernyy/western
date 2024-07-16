@@ -19,16 +19,25 @@ let DialogerUI = {
 
             this.open = true
         },
+        handleOptionApply(option : Object) : void {
+            if(option.makeTrue){
+                this.gameState[option.makeTrue] = true
+            }
+            this.toggleCurrentDialog(option.next)
+        },
         toggleCurrentDialog(dialogLabel : string) : void {
             this.currentDialogText = this.replaceVariables(this.dialog[dialogLabel]["text"])
-            this.currentDialogOptions = this.checkOptionsCondition(this.dialog[dialogLabel]["options"])
+            this.currentDialogOptions = this.prepareOptions(this.dialog[dialogLabel]["options"])
         },
-        checkOptionsCondition(options : Array<Object>) : Array<Object> {
-          options.forEach(option => {
-              if(option.condition && !this.gameState[option.condition]){
-                  option.hidden = true
-              }
-          })
+        prepareOptions(options : Array<Object>) : Array<Object> {
+            options.forEach(option => {
+                if(option.condition && !this.gameState[option.condition]){
+                    option.hidden = true
+                    return
+                }
+
+                option.text = this.replaceVariables(option.text)
+            })
             return options
         },
         replaceVariables(phrase : string) : string {
@@ -56,7 +65,7 @@ let DialogerUI = {
                             <p class="dialoger-ui__option" 
                                v-for="option in currentDialogOptions"
                                 v-show="!option.hidden"
-                               @click="toggleCurrentDialog(option.next)"
+                               @click="handleOptionApply(option)"
                             >
                                 {{ option.text }}</p>
                         </div>
