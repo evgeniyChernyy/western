@@ -17,7 +17,7 @@ export class AI extends Physics.Matter.Sprite{
     state : string
     health : number
     stamina : number
-    data : Array<Object>
+    properties : Array<Object>
     speed : number
     playerDetected : boolean = false
     playerRelation: number
@@ -58,7 +58,7 @@ export class AI extends Physics.Matter.Sprite{
     fightSituationCheckTimeout : number
 
     constructor(config) {
-        super(config.scene.matter.world, config.x, config.y, "bandit", 0, {
+        super(config.scene.matter.world, config.x, config.y, config.label, 0, {
             shape: {type: 'circle', radius: 65},
             render: {sprite: {xOffset: -0.15}},
             frictionAir: 0,
@@ -74,11 +74,11 @@ export class AI extends Physics.Matter.Sprite{
         this.state = "idle"
         this.health = config.health || 100
         this.stamina = config.stamina || 100
-        this.data = config.data
+        this.properties = config.data
         this.speed = HUMAN_SPEED_WALK
-        this.playerRelation = this.getDataByLabel("playerRelation") || NPC_BASIC_PLAYER_RELATION
-        this.detectionDistance = this.getDataByLabel("detectionDistance") || NPC_DETECTION_DISTANCE
-        this.detectionInterval = this.getDataByLabel("detectionInterval") || NPC_DETECTION_INTERVAL
+        this.playerRelation = utils.getDataByLabel("playerRelation",this.properties) || NPC_BASIC_PLAYER_RELATION
+        this.detectionDistance = utils.getDataByLabel("detectionDistance",this.properties) || NPC_DETECTION_DISTANCE
+        this.detectionInterval = utils.getDataByLabel("detectionInterval",this.properties) || NPC_DETECTION_INTERVAL
         this.bullets = []
         this.canShoot = true
         this.readyToShoot = false
@@ -153,12 +153,9 @@ export class AI extends Physics.Matter.Sprite{
     losePlayer(){
         l("lost sight of player")
     }
-    getDataByLabel(label : string) : undefined | number | string {
-        return this.data.find((el) => el.name === label )?.value
-    }
     // task state - stopped paused inProgress canceled
     getGlobalTaskFromObject(){
-        if(this.data.find((el) => { return el.name.includes("patrol") })){
+        if(this.properties.find((el) => { return el.name.includes("patrol") })){
             this.getPatrolPoints()
 
             return [{
@@ -186,7 +183,7 @@ export class AI extends Physics.Matter.Sprite{
     }
     getPatrolPoints(){
         let patrolPoint = {}
-        this.data.forEach((el)=>{
+        this.properties.forEach((el)=>{
             if(el.name === "patrolX") patrolPoint["x"] = this.x + el.value
             if(el.name === "patrolY") patrolPoint["y"] = this.y + el.value
         })

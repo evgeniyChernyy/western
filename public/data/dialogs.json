@@ -1,0 +1,27 @@
+{
+  "erick": {
+    "welcome": {
+      "text": "Hello Evgen! How are you doing?",
+      "options": [{
+        "text": "I`m Ok, thank you!",
+        "next": "newTask"
+      },
+      {
+        "text": "I`m so tired...",
+        "next": "goBack"
+      }
+      ]
+    },
+    "newTask": {
+      "text": "I have a new job for you",
+      "options": [{
+        "text": "Naaaaice!",
+        "next": "getNewTask"
+      },
+        {
+          "text": "No, thank you. I dont need",
+          "next": "refuse"
+        }]
+    }
+  }
+}

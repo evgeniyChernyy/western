@@ -2,6 +2,8 @@ import { Scene, GameObjects, Tilemaps } from 'phaser';
 import {PLAYER_DEPTH} from "../constants";
 import {Player} from "../classes/Player";
 import {AI} from "../classes/AI";
+import utils from "../utils";
+import Dialoger from "../components/Dialoger";
 
 export class Main extends Scene
 {
@@ -9,8 +11,13 @@ export class Main extends Scene
     grass : GameObjects.TileSprite
     treesLayer : Tilemaps.ObjectLayer
     charactersLayer : Tilemaps.ObjectLayer
+    triggersLayer : Tilemaps.ObjectLayer
+
+    // components
+    dialoger : Dialoger
 
     npcs : Array<AI>
+    triggers : Array<Object>
     player : GameObjects.Image
 
     bulletsGroup : number
@@ -25,6 +32,11 @@ export class Main extends Scene
     }
     create ()
     {
+        // components - Dialoger
+        this.dialoger = new Dialoger({
+            scene:this
+        })
+
         // create map and bounds - walls are in obstacle category
         this.map = this.make.tilemap({ key: 'level1' })
         this.matter.world.setBounds(0,0,this.map.widthInPixels, this.map.heightInPixels)
@@ -49,9 +61,14 @@ export class Main extends Scene
         this.charactersLayer = this.map.getObjectLayer("characters")
         this.npcs = []
         this.addCharacters()
-        this.game.canvas.addEventListener('mousedown', () => {
-            this.game.input.mouse.requestPointerLock();
+        this.game.canvas.addEventListener('mouseup', (ev) => {
+            this.game.input.mouse.requestPointerLock()
         });
+
+        // map triggers
+        this.triggersLayer = this.map.getObjectLayer("triggers")
+        this.triggers = []
+        this.addTriggers()
 
         // camera
         this.cameras.main.setBounds(0,0,this.map.widthInPixels,this.map.heightInPixels)
@@ -86,11 +103,23 @@ export class Main extends Scene
 
                 character.getHitByGrenade()
             }
+            if(bodyA?.gameObject === this.player && bodyB.label === "dialog" ||
+                bodyB?.gameObject === this.player && bodyA.label === "dialog"){
+                let trigger = bodyA.gameObject === this.player ? bodyB : bodyA
+
+                this.player.stand()
+                this.player.setControllable(false)
+                document.exitPointerLock()
+                this.startDialog(trigger)
+            }
         });
 
         this.scene.run("UI",{
             player:this.player
         })
+    }
+    startDialog(trigger : Object){
+        document.dispatchEvent(new CustomEvent("StartDialog", { detail: trigger.characterLabel }))
     }
     createAnimations(){
         this.anims.create({
@@ -168,8 +197,36 @@ export class Main extends Scene
                     x:object.x,
                     y:object.y,
                     scene:this,
-                    data:object.properties
+                    data:object.properties,
+                    label:object.name
                 }))
+            }
+            if (object.name === "npc") {
+                this.npcs.push(new AI({
+                    x:object.x,
+                    y:object.y,
+                    scene:this,
+                    data:object.properties,
+                    label:"erick"
+                }))
+            }
+        })
+    }
+    addTriggers(){
+        this.triggersLayer.objects.forEach((object) => {
+            if (object.name === "dialog") {
+                let characterLabel = utils.getDataByLabel("character",object.properties),
+                    trigger = this.matter.add.rectangle(
+                    object.x, object.y, object.width, object.height, {
+                        label: "dialog",
+                        isSensor:true,
+                    }
+                    );
+
+                trigger.properties = object.properties
+                trigger.characterLabel = characterLabel
+
+                this.triggers.push(trigger)
             }
         })
     }

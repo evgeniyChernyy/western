@@ -3,8 +3,8 @@ import {
     PLAYER_DEPTH, HEALTH_RECOVERY_TIMEOUT, HUMAN_SPEED_WALK, HUMAN_SPEED_RUN, UI_COLOR_RED_CSS, UI_DEPTH,
     UI_COLOR_RED, UI_COLOR_SILVER, UI_MARGIN, STAMINA_SPENDING, STAMINA_RECOVERY
 } from "../constants"
-import {Bullet} from "../classes/Bullet";
-import {Grenade} from "../classes/Grenade";
+import {Bullet} from "./Bullet";
+import {Grenade} from "./Grenade";
 import {weapons,ammo} from "../data/weapons"
 import {BloodDrop} from "./BloodDrop";
 
@@ -462,6 +462,9 @@ export class Player extends Physics.Matter.Sprite{
             statValue:this.health
         })
     }
+    setControllable(controllable = true){
+        this.controllable = controllable
+    }
     die(){
         this.state = "died"
         this.controllable = false
@@ -478,6 +481,11 @@ export class Player extends Physics.Matter.Sprite{
         this.scene.time.removeEvent(this.healthRecoveryEvent)
         this.scene.time.removeEvent(this.reloadEvent)
         this.scene.time.removeEvent(this.shootDelayEvent)
+    }
+    stand(){
+        this.stop()
+        this.feet.stop()
+        this.setVelocity(0,0)
     }
     update(){
         if(!this.controllable) return
@@ -538,7 +546,9 @@ export class Player extends Physics.Matter.Sprite{
         }
 
         // firing
-        if(this.scene.input.activePointer.isDown && this.canShoot) {
+        if(this.scene.input.activePointer.isDown
+            && this.canShoot
+            && this.scene.input.mouse.locked) {
             if(this.currentWeapon.type === "weapon"){
                 this.shoot()
             }

@@ -121,8 +121,54 @@
                  "rotation":0,
                  "visible":true,
                  "width":0,
-                 "x":942,
-                 "y":654
+                 "x":988,
+                 "y":712
+                }, 
+                {
+                 "class":"",
+                 "height":0,
+                 "id":21,
+                 "name":"npc",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"charName",
+                         "type":"string",
+                         "value":"erick"
+                        }],
+                 "rotation":0,
+                 "visible":true,
+                 "width":0,
+                 "x":558,
+                 "y":570
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":4,
+         "name":"triggers",
+         "objects":[
+                {
+                 "class":"",
+                 "height":68,
+                 "id":24,
+                 "name":"dialog",
+                 "properties":[
+                        {
+                         "name":"character",
+                         "type":"string",
+                         "value":"erick"
+                        }],
+                 "rotation":0,
+                 "visible":true,
+                 "width":64,
+                 "x":481.333333333333,
+                 "y":567.333333333333
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -161,8 +207,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":4,
- "nextobjectid":21,
+ "nextlayerid":5,
+ "nextobjectid":25,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.9.2",
