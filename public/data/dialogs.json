@@ -19,6 +19,11 @@
         "next": "getNewTask"
       },
         {
+        "text": "You are bastard!",
+        "next": "refuse",
+        "condition": "aliceAlive"
+      },
+        {
           "text": "No, thank you. I dont need",
           "next": "refuse"
         }]

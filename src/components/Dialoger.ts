@@ -25,7 +25,9 @@ export default class Dialoger {
         this.dialogerUI.start(dialog)
     }
     init(){
-        this.dialogerUI = Vue.createApp(DialogerUI).mount('#dialogerContainer')
+        this.dialogerUI = Vue.createApp(DialogerUI,{
+            gameState:this.game.state
+        }).mount('#dialogerContainer')
 
         // Listen for the event.
         document.addEventListener("StartDialog",(event) => {

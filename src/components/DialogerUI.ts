@@ -1,4 +1,7 @@
 let DialogerUI = {
+    props:{
+        gameState:{type:Object}
+    },
     data() {
         return {
             dialog: null,
@@ -17,7 +20,15 @@ let DialogerUI = {
         },
         toggleCurrentDialog(dialogLabel : string) : void {
             this.currentDialogText = this.dialog[dialogLabel]["text"]
-            this.currentDialogOptions = this.dialog[dialogLabel]["options"]
+            this.currentDialogOptions = this.checkOptionsCondition(this.dialog[dialogLabel]["options"])
+        },
+        checkOptionsCondition(options : Array<Object>) : Array<Object> {
+          options.forEach(option => {
+              if(option.condition && !this.gameState[option.condition]){
+                  option.hidden = true
+              }
+          })
+            return options
         },
         closeDialog() : void {
             this.open = false
@@ -35,8 +46,10 @@ let DialogerUI = {
                     </div>
                     <div class="dialoger-ui__bottom">
                         <div class="dialoger-ui__options-container">
-                            <p class="dialoger-ui__option" v-for="option in currentDialogOptions"
-                            @click="toggleCurrentDialog(option.next)"
+                            <p class="dialoger-ui__option" 
+                               v-for="option in currentDialogOptions"
+                                v-show="!option.hidden"
+                               @click="toggleCurrentDialog(option.next)"
                             >
                                 {{ option.text }}</p>
                         </div>

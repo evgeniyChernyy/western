@@ -55,6 +55,9 @@ game.custom = {
     vh:window.innerHeight / 100,
     ratio,
 }
+game.state = {
+    aliceAlive:true
+}
 
 // this = context = game
 function resize (scene)
