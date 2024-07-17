@@ -7,6 +7,7 @@ let DialogerUI = {
         return {
             dialog: null,
             open:false,
+            characterName:"",
             currentDialogText:"",
             currentDialogOptions:[],
         }
@@ -14,8 +15,15 @@ let DialogerUI = {
     methods:{
         start(dialog : Object) : void {
             this.dialog = dialog
+            this.characterName = dialog["name"]
 
             this.toggleCurrentDialog("welcome")
+
+            // set avatar
+            let avatarElement = this.$refs.avatar,
+                frameWidth = parseInt(getComputedStyle(avatarElement).width),
+                avatarFrame = dialog["avatarFrame"]
+            avatarElement.style.backgroundPosition = (frameWidth * avatarFrame) + "px 0"
 
             this.open = true
         },
@@ -55,9 +63,10 @@ let DialogerUI = {
     template:`
             <div class="dialoger-overlay" :class="{active:open}"></div>
             <div class="dialoger-ui" :class="{active:open}">
-                <div class="dialoger-ui__container" v-if="dialog">
+                <div class="dialoger-ui__container">
                     <div class="dialoger-ui__top">
-                        <p class="dialoger-ui__charname">Erick</p>
+                        <div class="dialoger-ui__avatar" ref="avatar"></div>
+                        <p class="dialoger-ui__charname">{{ characterName }}</p>
                         <p class="dialoger-ui__phrase">{{ currentDialogText }}</p>
                     </div>
                     <div class="dialoger-ui__bottom">

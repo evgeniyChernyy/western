@@ -46,12 +46,18 @@ canvas#canvas{
     visibility: visible;
     opacity: 1;
 }
+.dialoger-ui__top{
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
 .dialoger-ui__charname{
     font-size: 24px;
     font-weight: 700;
     margin-bottom: 16px;
 }
 .dialoger-ui__phrase{
+    width: 100%;
     margin-bottom: 16px;
     border: 1px solid #d3d3d3;
     padding: 16px;
@@ -75,4 +81,10 @@ canvas#canvas{
     padding: 6px 24px;
     font-weight: 500;
     font-size: 16px;
+}
+.dialoger-ui__avatar{
+    background-image: url("./assets/portraits.jpg");
+    width: 180px;
+    height: 180px;
+    background-size: auto 180px;
 }
