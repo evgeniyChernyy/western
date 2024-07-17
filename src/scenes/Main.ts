@@ -2,8 +2,8 @@ import { Scene, GameObjects, Tilemaps } from 'phaser';
 import {PLAYER_DEPTH} from "../constants";
 import {Player} from "../classes/Player";
 import {AI} from "../classes/AI";
-import utils from "../utils";
 import Dialoger from "../components/Dialoger";
+import {Trigger} from "../classes/Trigger"
 
 export class Main extends Scene
 {
@@ -108,13 +108,13 @@ export class Main extends Scene
             }
             if(bodyA?.gameObject === this.player && bodyB.label === "dialog" ||
                 bodyB?.gameObject === this.player && bodyA.label === "dialog"){
-                let trigger = bodyA.gameObject === this.player ? bodyB : bodyA
+                let triggerBody = bodyA.gameObject === this.player ? bodyB : bodyA
 
                 this.player.stand()
                 this.player.setControllable(false)
                 document.exitPointerLock()
                 document.dispatchEvent(
-                    new CustomEvent("StartDialog", { detail: trigger.characterLabel })
+                    new CustomEvent("StartDialog", { detail: triggerBody.trigger.characterLabel })
                 )
             }
         });
@@ -223,18 +223,7 @@ export class Main extends Scene
     addTriggers(){
         this.triggersLayer.objects.forEach((object) => {
             if (object.name === "dialog") {
-                let characterLabel = utils.getDataByLabel("character",object.properties),
-                    trigger = this.matter.add.rectangle(
-                    object.x, object.y, object.width, object.height, {
-                        label: "dialog",
-                        isSensor:true,
-                    }
-                    );
-
-                trigger.properties = object.properties
-                trigger.characterLabel = characterLabel
-
-                this.triggers.push(trigger)
+                this.triggers.push(new Trigger(this,object) )
             }
         })
     }
