@@ -31,6 +31,9 @@ let DialogerUI = {
             if(option.makeTrue){
                 this.gameState[option.makeTrue] = true
             }
+            if(option.makeFalse){
+                this.gameState[option.makeFalse] = false
+            }
             this.toggleCurrentDialog(option.next)
         },
         toggleCurrentDialog(dialogLabel : string) : void {

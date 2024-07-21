@@ -24,7 +24,8 @@
         "text": "You are bastard!",
         "next": "refuse",
         "condition": "aliceAlive",
-        "makeTrue": "peoplesRelation"
+        "makeTrue": "peoplesRelation",
+        "makeFalse": "michaelRelation"
       },
         {
           "text": "No, thank you. I dont need",
