@@ -50,6 +50,8 @@ let DialogerUI = {
         },
         replaceVariables(phrase : string) : string {
             phrase = phrase.replace(/%\w+%/g, (variableCode)=>{
+                // remove %
+                variableCode =  variableCode.slice(1,variableCode.length - 1)
                 return this.dialogsVariables[variableCode]
             })
             return phrase

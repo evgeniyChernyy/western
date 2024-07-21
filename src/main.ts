@@ -59,8 +59,8 @@ game.state = {
     aliceAlive:true
 }
 game.dialogsVariables = {
-    "%FACTION_NAME%":"Red Skulls",
-    "%CITY%":"Jersey"
+    FACTION_NAME:"Red Skulls",
+    CITY:"Jersey"
 }
 
 // this = context = game
