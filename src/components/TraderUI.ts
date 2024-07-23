@@ -35,7 +35,8 @@ let TraderUI = {
             this.open = true
         },
         handleDragEnd(event){
-            l(event)
+            if(event.from.dataset.list === event.to.dataset.list) return
+
             this.draggedElement["from"] = event.from.dataset.list
             this.draggedElement["oldIndex"] = event.oldDraggableIndex
             this.draggedElement["newIndex"] = event.newDraggableIndex
@@ -48,22 +49,53 @@ let TraderUI = {
             this.rangeSceneActive = true
         },
         cancelMoving(){
-            // insert to old list
-            let fromKey = this.draggedElement["from"],
-                toKey = this.draggedElement["to"]
-            this[fromKey].splice(
-                this.draggedElement["oldIndex"],
-                0,
-                this.draggedElement["item"]
-            )
+            // remove from new list
+            let toKey = this.draggedElement["to"]
 
-            // remove from current list
             this[toKey].splice(
                 this.draggedElement["newIndex"],
                 1
             )
 
             this.rangeSceneActive = false
+        },
+        applyMoving(){
+            let fromKey = this.draggedElement["from"],
+                toKey = this.draggedElement["to"]
+
+            // move all items
+            if(Number(this.quantityValue) === this.rangeMax){
+                this[fromKey].splice(
+                    this.draggedElement["oldIndex"],
+                    1
+                )
+            } else {
+                this[fromKey][ this.draggedElement["oldIndex"] ].quantity -= this.quantityValue
+                this[toKey][this.draggedElement["newIndex"]].quantity = this.quantityValue
+            }
+            this.removeDuplicatesInList(toKey)
+
+            this.rangeSceneActive = false
+        },
+        removeDuplicatesInList(listKey : string){
+            for(let i = 0; i < this[listKey].length; i++){
+                if(this[listKey][i].name === this.draggedElement["item"].name &&
+                i !== this.draggedElement["newIndex"]){
+                    this[listKey][i].quantity = Number(this[listKey][i].quantity) + Number(this.quantityValue)
+
+                    this[listKey].splice(
+                        this.draggedElement["newIndex"],
+                        1
+                    )
+                    break
+                }
+            }
+        },
+        cloneItem(item : Object){
+            return {
+                name:item.name,
+                quantity:item.quantity
+            }
         }
     },
     template:`
@@ -75,8 +107,9 @@ let TraderUI = {
                         <draggable
                                 class="trader-ui__items-list"
                                 data-list="playerInventory"
+                                :group="{ name: 'sales', pull: 'clone', put: true }"
+                                :clone="cloneItem"
                                 v-model="playerInventory"
-                                group="sales"
                                 @end="handleDragEnd"
                                 :sort="false"
                                 item-key="id">
@@ -95,10 +128,10 @@ let TraderUI = {
                         <draggable
                                 class="trader-ui__items-list"
                                 data-list="sales"
+                                :group="{ name: 'sales', pull: 'clone', put: true }"
+                                :clone="cloneItem"
                                 v-model="sales"
-                                group="sales"
-                                @start="drag=true"
-                                @end="drag=false"
+                                @end="handleDragEnd"
                                 :sort="false"
                                 item-key="id">
                             <template #item="{element}">
@@ -164,7 +197,7 @@ let TraderUI = {
                 </div>
                 <div class="trader-ui__quantity-assistant-bottom">
                     <button class="trader-ui__quantity-assistant-button" @click="cancelMoving">Cancel</button>
-                    <button class="trader-ui__quantity-assistant-button">Ok</button>
+                    <button class="trader-ui__quantity-assistant-button" @click="applyMoving">Ok</button>
                 </div>
             </div>
             `
