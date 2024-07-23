@@ -29,6 +29,9 @@ export class Player extends Physics.Matter.Sprite{
     weapons : Array<object>
     currentWeapon : object
 
+    inventory : Array<object>
+    money : number
+
     // player world status and missions etc
     factions : Array<string>
 
@@ -64,6 +67,18 @@ export class Player extends Physics.Matter.Sprite{
         this.ammo = Phaser.Utils.Objects.Clone(ammo)
         this.weapons = JSON.parse(JSON.stringify(weapons))
         this.currentWeapon = this.weapons[0]
+
+        this.inventory = [{
+            name:"whiskey",
+            quantity:5,
+        },{
+            name:"meat",
+            quantity:7,
+        },{
+            name:"rope",
+            quantity:2,
+        }]
+        this.money = 95.2
 
         // player world status and missions etc
         this.factions = []

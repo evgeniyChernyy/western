@@ -19,7 +19,11 @@ export class Trigger{
             }
         )
         this.properties = triggerObject.properties
-        this.characterLabel = utils.getDataByLabel("character",triggerObject.properties)
+
+        let characterLabel = utils.getDataByLabel("character",triggerObject.properties)
+        if(characterLabel){
+            this.characterLabel = characterLabel
+        }
 
         // backlink
         this.rectangle.trigger = this

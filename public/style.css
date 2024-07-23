@@ -88,3 +88,85 @@ canvas#canvas{
     height: 180px;
     background-size: auto 180px;
 }
+
+/* trader */
+.trader-ui__quantity-assistant,
+.trader-ui{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 800px;
+    height: 400px;
+    background-color: white;
+    color: black;
+    padding: 12px;
+    border-radius: 12px;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity .3s, visibility .3s;
+    transform: translate3d(-50%,-50%,0);
+}
+.trader-ui__quantity-assistant.active,
+.trader-ui.active{
+    visibility: visible;
+    opacity: 1;
+}
+.trader-ui__inner-container{
+    display: flex;
+    justify-content: space-between;
+    height: 100%;
+}
+.trader-ui__buying-container,
+.trader-ui__sales-container,
+.trader-ui__player-inventory-container,
+.trader-ui__seller-inventory-container{
+    padding: 12px;
+    border: 1px solid #d3d3d3;
+    border-radius: 12px;
+    flex-basis: 20%;
+    height: 100%;
+    max-height: 100%;
+    overflow-y: scroll;
+}
+.trader-ui__money-label{
+    color: limegreen;
+    margin-bottom: 20px;
+}
+.trader-ui__item {
+    position: relative;
+    width: 80px;
+}
+.trader-ui__item-quantity{
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 22px;
+    font-weight: 500;
+    color: red;
+}
+.trader-ui__items-list {
+    min-height: 100%;
+    width: 100%;
+}
+.trader-ui__quantity-assistant-top{
+    display: flex;
+    flex-wrap: wrap;
+}
+.trader-ui__quantity-current{
+    flex-basis: 100%;
+    margin-left: 70px;
+    font-size: 20px;
+    font-weight: 500;
+    margin-top: 12px;
+}
+.trader-ui__quantity-assistant-button{
+    padding: 5px 12px;
+    border:1px solid #d3d3d3;
+    border-radius:12px;
+    font-weight: 500;
+    font-size: 14px;
+    min-width: 90px;
+}
+.trader-ui__quantity-assistant-button:first-child{
+    margin-right:12px;
+}

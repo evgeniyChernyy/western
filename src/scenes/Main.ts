@@ -4,6 +4,7 @@ import {Player} from "../classes/Player";
 import {AI} from "../classes/AI";
 import Dialoger from "../components/Dialoger";
 import {Trigger} from "../classes/Trigger"
+import Trader from "../components/Trader"
 
 export class Main extends Scene
 {
@@ -15,6 +16,7 @@ export class Main extends Scene
 
     // components
     dialoger : Dialoger
+    trader : Trader
 
     npcs : Array<AI>
     triggers : Array<Object>
@@ -34,6 +36,9 @@ export class Main extends Scene
     {
         // components - Dialoger
         this.dialoger = new Dialoger({
+            scene:this
+        })
+        this.trader = new Trader({
             scene:this
         })
 
@@ -115,6 +120,17 @@ export class Main extends Scene
                 document.exitPointerLock()
                 document.dispatchEvent(
                     new CustomEvent("StartDialog", { detail: triggerBody.trigger.characterLabel })
+                )
+            }
+            if(bodyA?.gameObject === this.player && bodyB.label === "trade" ||
+                bodyB?.gameObject === this.player && bodyA.label === "trade"){
+                let triggerBody = bodyA.gameObject === this.player ? bodyB : bodyA
+
+                this.player.stand()
+                this.player.setControllable(false)
+                document.exitPointerLock()
+                document.dispatchEvent(
+                    new CustomEvent("StartTrade")
                 )
             }
         });
@@ -222,7 +238,8 @@ export class Main extends Scene
     }
     addTriggers(){
         this.triggersLayer.objects.forEach((object) => {
-            if (object.name === "dialog") {
+            if (object.name === "dialog" ||
+                object.name === "trade") {
                 this.triggers.push(new Trigger(this,object) )
             }
         })
