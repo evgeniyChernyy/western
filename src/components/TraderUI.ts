@@ -150,9 +150,9 @@ let TraderUI = {
                                 class="trader-ui__items-list"
                                 data-list="purchases"
                                 v-model="purchases"
-                                group="purchases"
-                                @start="drag=true"
-                                @end="drag=false"
+                                :group="{ name: 'purchases', pull: 'clone', put: true }"
+                                :clone="cloneItem"
+                                @end="handleDragEnd"
                                 :sort="false"
                                 item-key="id">
                             <template #item="{element}">
@@ -171,9 +171,9 @@ let TraderUI = {
                                 class="trader-ui__items-list"
                                 data-list="sellerInventory"
                                 v-model="sellerInventory"
-                                group="purchases"
-                                @start="drag=true"
-                                @end="drag=false"
+                                :group="{ name: 'purchases', pull: 'clone', put: true }"
+                                :clone="cloneItem"
+                                @end="handleDragEnd"
                                 :sort="false"
                                 item-key="id">
                             <template #item="{element}">
