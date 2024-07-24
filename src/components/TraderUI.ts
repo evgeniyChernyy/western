@@ -1,4 +1,5 @@
 import draggable from 'vuedraggable'
+import {goods} from "../data/goods"
 
 let TraderUI = {
     components:{
@@ -76,6 +77,16 @@ let TraderUI = {
             this.removeDuplicatesInList(toKey)
 
             this.rangeSceneActive = false
+
+            let updateListKey = toKey === "sales" || fromKey === "sales" ? "sales" : "purchases"
+            this.updateTotal(updateListKey)
+        },
+        updateTotal(listKey : string){
+            let sum = 0
+
+            this[listKey].forEach((item)=>{ sum += item.quantity * goods[item.name]["price"] })
+
+            this[listKey + "Total"] = sum.toFixed(2)
         },
         removeDuplicatesInList(listKey : string){
             for(let i = 0; i < this[listKey].length; i++){
