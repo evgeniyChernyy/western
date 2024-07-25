@@ -5,7 +5,7 @@ export default {
     getDataByLabel(label : string, data : Array<Object>) : undefined | number | string {
         return data.find((el) => el.name === label )?.value
     },
-    toFixed(number,power = 2){
+    toFixed(number,power : number = 2) : number {
         let multiplier = Math.pow(10,power)
         return Math.round( number * multiplier ) / multiplier
     }
