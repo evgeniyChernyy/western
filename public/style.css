@@ -96,7 +96,7 @@ canvas#canvas{
     top: 50%;
     left: 50%;
     width: 800px;
-    height: 400px;
+    height: 420px;
     background-color: white;
     color: black;
     padding: 12px;
@@ -114,7 +114,7 @@ canvas#canvas{
 .trader-ui__inner-container{
     display: flex;
     justify-content: space-between;
-    height: 100%;
+    height: calc(100% - 20px);
 }
 .trader-ui__buying-container,
 .trader-ui__sales-container,
@@ -159,6 +159,7 @@ canvas#canvas{
     font-weight: 500;
     margin-top: 12px;
 }
+.trader-ui__btn,
 .trader-ui__quantity-assistant-button{
     padding: 5px 12px;
     border:1px solid #d3d3d3;
@@ -167,6 +168,11 @@ canvas#canvas{
     font-size: 14px;
     min-width: 90px;
 }
+.trader-ui__btn,
 .trader-ui__quantity-assistant-button:first-child{
     margin-right:12px;
+}
+.trader-ui__btns-container{
+    display: flex;
+    justify-content: flex-end;
 }

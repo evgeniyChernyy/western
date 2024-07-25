@@ -78,7 +78,7 @@ export class Player extends Physics.Matter.Sprite{
             name:"rope",
             quantity:2,
         }]
-        this.money = 95.2
+        this.money = 12.2
 
         // player world status and missions etc
         this.factions = []

@@ -144,6 +144,13 @@ export class Main extends Scene
             this.player.setControllable(true)
             this.game.input.mouse.requestPointerLock()
         });
+
+        document.addEventListener("CloseTrade",(event) => {
+            this.player.money = event.detail.playerMoney
+
+            this.player.setControllable(true)
+            this.game.input.mouse.requestPointerLock()
+        });
     }
     createAnimations(){
         this.anims.create({

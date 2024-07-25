@@ -1,5 +1,6 @@
 import draggable from 'vuedraggable'
 import {goods} from "../data/goods"
+import utils from "../utils";
 
 let TraderUI = {
     components:{
@@ -34,6 +35,79 @@ let TraderUI = {
             this.playerMoney = playerMoney
 
             this.open = true
+        },
+        closeTrader(){
+            this.returnGoods()
+
+            this.open = false
+
+            document.dispatchEvent(new CustomEvent("CloseTrade",{
+                detail: {
+                    playerMoney: this.playerMoney,
+                },
+            }))
+        },
+        confirmTrade(){
+            if(!this.sales.length && !this.purchases.length) return
+
+            let moneySaldo = utils.toFixed(this.salesTotal - this.purchasesTotal)
+
+            if(moneySaldo < 0 && this.playerMoney + moneySaldo < 0){
+                alert("You have not enough money!")
+                return
+            } else if (moneySaldo > 0 && this.sellerMoney - moneySaldo < 0){
+                alert("Seller has not enough money!")
+                return
+            }
+
+            this.playerMoney = utils.toFixed(this.playerMoney + moneySaldo)
+            this.sellerMoney = utils.toFixed(this.sellerMoney - moneySaldo)
+
+            this.cloneGoods(
+                this.sales,
+                this.sellerInventory
+            )
+            this.cloneGoods(
+                this.purchases,
+                this.playerInventory
+            )
+
+            this.sales = []
+            this.purchases = []
+            this.salesTotal = 0
+            this.purchasesTotal = 0
+        },
+        cloneGoods(fromList : Array<Object>, toList : Array<Object>){
+            let goodsMap = {}
+            toList.forEach((good,index)=>{
+                goodsMap[good.name] = index
+            })
+
+            fromList.forEach((item)=>{
+                if(goodsMap[item.name] !== undefined){
+                    let goodIndex = goodsMap[item.name]
+                    toList[goodIndex].quantity += item.quantity
+                } else {
+                    toList.push({
+                        name:item.name,
+                        quantity:item.quantity
+                    })
+                }
+            })
+        },
+        returnGoods(){
+            this.cloneGoods(
+                this.sales,
+                this.playerInventory
+            )
+
+            this.cloneGoods(
+                this.purchases,
+                this.sellerInventory
+            )
+
+            this.sales = []
+            this.purchases = []
         },
         handleDragEnd(event){
             if(event.from.dataset.list === event.to.dataset.list) return
@@ -72,7 +146,7 @@ let TraderUI = {
                 )
             } else {
                 this[fromKey][ this.draggedElement["oldIndex"] ].quantity -= this.quantityValue
-                this[toKey][this.draggedElement["newIndex"]].quantity = this.quantityValue
+                this[toKey][this.draggedElement["newIndex"]].quantity = +this.quantityValue
             }
             this.removeDuplicatesInList(toKey)
 
@@ -86,7 +160,7 @@ let TraderUI = {
 
             this[listKey].forEach((item)=>{ sum += item.quantity * goods[item.name]["price"] })
 
-            this[listKey + "Total"] = sum.toFixed(2)
+            this[listKey + "Total"] = utils.toFixed(sum)
         },
         removeDuplicatesInList(listKey : string){
             for(let i = 0; i < this[listKey].length; i++){
@@ -197,6 +271,10 @@ let TraderUI = {
                             </template>
                         </draggable>
                     </div>
+                </div>
+                <div class="trader-ui__btns-container">
+                    <button class="trader-ui__btn" @click="closeTrader">Cancel</button>
+                    <button class="trader-ui__btn" @click="confirmTrade">Confirm</button>
                 </div>
             </div>
             <div class="trader-ui__quantity-assistant" :class="{active:rangeSceneActive}">
