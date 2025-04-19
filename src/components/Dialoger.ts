@@ -14,7 +14,7 @@ export default class Dialoger {
         this.init()
     }
     async startDialog(characterLabel : string){
-        let response = await fetch("/data/dialogs.json"),
+        let response = await fetch("./data/dialogs.json"),
             json = await response.json(),
             dialog = json[characterLabel]
 
